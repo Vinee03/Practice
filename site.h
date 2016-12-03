@@ -41,9 +41,9 @@ struct versionTable
 
 struct site
 {
-struct versionTable variable[MAX_VARIABLES];
-struct lockTable lock_Entries[MAX_VARIABLES];
-}sites[MAX_SITES];
+struct versionTable variable[MAXIMUM_VARIABLES];
+struct lockTable lock_Entries[MAXIMUM_VARIABLES];
+}sites[MAXIMUM_SITES];
 
 
 
