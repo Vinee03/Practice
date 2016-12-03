@@ -325,7 +325,7 @@ else
 			{
 			   if(timestamp > first->transactionTimestamp)   // If Younger one is requesting;Kill it
 			     { 
-                          sprintf(log_desc,"At Site %d: trnid %d timestamp %d rejected in favor of trnid %d timestamp %d has lock on varNo %d due to wait-die\n", site_No, tid, timestamp, first->tid, first->transactionTimestamp, first->varNo) ;
+                          sprintf(log_desc,"At Site %d: trnid %d timestamp %d rejected in favor of trnid %d timestamp %d has lock on varNo %d due to wait-die\n", site_No, trnid, timestamp, first->trnid, first->transactionTimestamp, first->varNo) ;
 			  logString(log_desc) ;
 			      found=1;
 			      return -1; 
@@ -334,7 +334,7 @@ else
 			   break;
 			first=first->nextOperationSite;
 			}
-			//printf("\n Timestamp of %d;TRNID:%d Timestamp of %d;TRNID:%d",timestamp,trnid,first->transactionTimestamp,first->tid);
+			//printf("\n Timestamp of %d;TRNID:%d Timestamp of %d;TRNID:%d",timestamp,trnid,first->transactionTimestamp,first->trnid);
 
 			if(found==0) {                  // If older one is requesting;block it  
                           sprintf(log_desc,"At Site %d: trnid %d timestamp %d blocked since trnid %d timestamp %d has the lock on varNo %d\n", site_No, trnid, timestamp, first->trnid, first->transactionTimestamp, first->varNo) ;
