@@ -1,22 +1,22 @@
-#include "globals.h"
-#include "transaction_manager_structures.h"
+#include "globalvar.h"
 #include "site.h"
+#include "transaction_manager_struct.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 int main(int argc, char *argv[]) {
-  char inputSequenceFile[100], log_desc[1000] ;
+  char inputFile[100], log_desc[1000] ;
   int ret ;
 
   if(argc != 2) {
     printf("Usage: %s <input-transaction-file-path>\n", argv[0]) ;
     return  0 ;
   }
-  strcpy(inputSequenceFile, argv[1]) ;
-  ret = checkFileExists(inputSequenceFile) ;
+  strcpy(inputFile, argv[1]) ;
+  ret = checkFileExists(inputFile) ;
   if(ret == -1) {
-   printf("main: File %s does not exist or is an empty file. Exiting\n", inputSequenceFile) ;
+   printf("main: File %s does not exist or is an empty file. Exiting\n", inputFile) ;
    return  0 ;
   }
   FILE *fp = fopen("repcrec.log", "w") ;
@@ -28,9 +28,9 @@ int main(int argc, char *argv[]) {
   }
   initializeTransactionManager() ;
   initializeSiteData() ;
-  ret = parseInput(inputSequenceFile) ;
+  ret = parseInput(inputFile) ;
   if(ret == -1) {
-   printf("main: parseInput could not parse file %s. Exiting\n", inputSequenceFile) ;
+   printf("main: parseInput could not parse file %s. Exiting\n", inputFile) ;
    return  0 ;
   }
   startTransactionManager() ;
