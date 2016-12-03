@@ -1,12 +1,8 @@
-#define MAX_TRANSACTIONS	10000
-#define MISCELLANEOUS_TID       9999             
-#define MAX_WAITING_TICKS	20		                 
-
-#include "globals.h"
 #include <time.h>
 
 #define TRANSACTION_COMMITED	1
 #define TRANSACTION_ABORTED	0
+
 /********************************************************************************************************************
                                         struct siteAccessInfo starts
                          The structure gives information for a particular site for a particular transaction
@@ -21,12 +17,16 @@ struct siteAccessInfo {
 ************************************************************************************************************************/
 
 struct siteInformation {
+
+
+
   int flag_varNo[MAX_SITES] ;
   int flag_siteAvailable ;	
   int tick_upTime ;		
 } ;
 typedef struct siteInformation siteInformation ;
 siteInformation siteInfo[MAX_SITES] ;
+
 /**************************************************************************************************************************
                                      struct Transaction Starts          
 *****************************************************************************************************************************/
