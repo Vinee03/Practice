@@ -4,7 +4,7 @@
 #include "site.h"
 
 int availableSites[MAX_SITES] ; //If the given site is available, the array stores value '1'. If the given site is unavailable, it stores the value '0'.
-void releaseLocks(int site_No,int tid);
+void releaseLocks(int site_No,int trnid);
 
 /********************************************************************************************************************************
 						 Function readEnableDisable Starts	
@@ -25,13 +25,13 @@ void readEnableDisable(int site_No,int varNo,int enable)
 				   It checks whether the variable is available for read or not. 
 				   If the variable varNo is available to read it returns 1 otherwise it returns 0. 
 ***********************************************************************************************************************************/
-int checkReadAvailability(int site_No,int varNo,int tid)
+int checkReadAvailability(int site_No,int varNo,int trnid)
 {
 
 struct operation *current = sites[site_No].lock_Entries[varNo].first_active_operation;
 if(current!=NULL)
 {
-	if(current->tid==tid && current->operationType==WRITE_OPERATION)  
+	if(current->trnid==trnid && current->operationType==WRITE_OPERATION)  
 	{
 		return 1;  
 	}
@@ -116,7 +116,7 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 	         	int exist=0;
 		     	while(current!=NULL)
 			 {
-				if((op->tid==current->tid)&&(current->W_Timestamp==MAX_TRANSACTION_TIMESTAMP))
+				if((op->trnid==current->trnid)&&(current->W_Timestamp==MAX_TRANSACTION_TIMESTAMP))
 				{
 					current->value=op->valueToWrite;
 					exist=1;
@@ -128,7 +128,7 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 			if(exist==0)
 			{
 				struct version *newNode = (struct version *) malloc (sizeof(struct version));
-				newNode->tid=op->tid;
+				newNode->trnid=op->trnid;
                        		newNode->value=op->valueToWrite;
  				newNode->R_Timestamp=MAX_TRANSACTION_TIMESTAMP;
 				newNode->W_Timestamp=MAX_TRANSACTION_TIMESTAMP;
@@ -143,7 +143,7 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 	         	int exist=0;
 		     	while(current!=NULL)
 			 {
-				if((op->tid==current->tid)&&(current->W_Timestamp==MAX_TRANSACTION_TIMESTAMP))
+				if((op->trnid==current->trnid)&&(current->W_Timestamp==MAX_TRANSACTION_TIMESTAMP))
 				{
 					op->valueRead=current->value;  
 					exist=1;
@@ -172,11 +172,11 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 		     {
 		     	while(current!=NULL)
 			 {
-				if((op->tid==current->tid)&&(current->W_Timestamp==MAX_TRANSACTION_TIMESTAMP))
+				if((op->trnid==current->trnid)&&(current->W_Timestamp==MAX_TRANSACTION_TIMESTAMP))
 				{
 					current->W_Timestamp=op->transactionTimestamp;
 					current->R_Timestamp=op->transactionTimestamp;    
-					if(checkReadAvailability(site_No,j,op->tid)==0) 
+					if(checkReadAvailability(site_No,j,op->trnid)==0) 
 						readEnableDisable(site_No,j,1);   		 
 				}   
 				current=current->next;
@@ -259,12 +259,12 @@ node->nextOperationSite=NULL;
 			     
 ********************************************************************************************************************************/
 
-int checkLockIsNecessary (int site_No,int varNo,int tid,int lock_Mode)
+int checkLockIsNecessary (int site_No,int varNo,int trnid,int lock_Mode)
 {
 		struct operation *first=sites[site_No].lock_Entries[varNo].first_active_operation ;
                 if(first != NULL )
 		{
-		  if(first->tid!=tid)  
+		  if(first->trnid!=trnid)  
 		  {
 			return 0;
 		  }		
@@ -285,13 +285,13 @@ int checkLockIsNecessary (int site_No,int varNo,int tid,int lock_Mode)
 ************************************************************************************************************************************/
 /*********************************************************************************************************************************
 						Function checkConflictAndDeadlockPrevention Starts
-checkConflictAndDeadlockPrevention checks if transaction tid’s access on data item ‘var’ conflicts with any other transaction in conflicting mode.
-Returns 0 of is there is no conflict and therefore lock can be granted; 1 if requesting tid should be blocked ; -1 if requesting tid should be aborted
+checkConflictAndDeadlockPrevention checks if transaction trnid’s access on data item ‘var’ conflicts with any other transaction in conflicting mode.
+Returns 0 of is there is no conflict and therefore lock can be granted; 1 if requesting trnid should be blocked ; -1 if requesting trnid should be aborted
 
 ************************************************************************************************************************************/
 
 
-int checkConflictAndDeadlockPrevention(int site_No,int varNo,int tid,int timestamp,int operationType)
+int checkConflictAndDeadlockPrevention(int site_No,int varNo,int trnid,int timestamp,int operationType)
 {
 		char log_desc[1000];
 		int found=0;
@@ -309,7 +309,7 @@ else
 
 //If the same transaction is requesting;No Conflict;This will happen if transaction has a read lock on variable but can't get the lock 
 	       if(first->nextOperationSite == NULL)
-		if(first->tid == tid) //This function is called only when the transaction had a low strength lock;so block the request
+		if(first->trnid == trnid) //This function is called only when the transaction had a low strength lock;so block the request
 		 {      
 			return 0;
 		 }
@@ -318,14 +318,14 @@ else
 		 {
 			return 2;    /// This indicates that variable is to be appended to the ;; Change this
 		 }    	
-		 else		//Compare tids for deadlock prevention 
+		 else		//Compare trnids for deadlock prevention 
 		 {
 		        
 			while(first!=NULL)
 			{
 			   if(timestamp > first->transactionTimestamp)   // If Younger one is requesting;Kill it
 			     { 
-                          sprintf(log_desc,"At Site %d: tid %d timestamp %d rejected in favor of tid %d timestamp %d has lock on varNo %d due to wait-die\n", site_No, tid, timestamp, first->tid, first->transactionTimestamp, first->varNo) ;
+                          sprintf(log_desc,"At Site %d: trnid %d timestamp %d rejected in favor of trnid %d timestamp %d has lock on varNo %d due to wait-die\n", site_No, tid, timestamp, first->tid, first->transactionTimestamp, first->varNo) ;
 			  logString(log_desc) ;
 			      found=1;
 			      return -1; 
@@ -334,10 +334,10 @@ else
 			   break;
 			first=first->nextOperationSite;
 			}
-			//printf("\n Timestamp of %d;TID:%d Timestamp of %d;TID:%d",timestamp,tid,first->transactionTimestamp,first->tid);
+			//printf("\n Timestamp of %d;TRNID:%d Timestamp of %d;TRNID:%d",timestamp,trnid,first->transactionTimestamp,first->tid);
 
 			if(found==0) {                  // If older one is requesting;block it  
-                          sprintf(log_desc,"At Site %d: tid %d timestamp %d blocked since tid %d timestamp %d has the lock on varNo %d\n", site_No, tid, timestamp, first->tid, first->transactionTimestamp, first->varNo) ;
+                          sprintf(log_desc,"At Site %d: trnid %d timestamp %d blocked since trnid %d timestamp %d has the lock on varNo %d\n", site_No, trnid, timestamp, first->trnid, first->transactionTimestamp, first->varNo) ;
 			  logString(log_desc);
 			  return 1;
                         }
@@ -412,10 +412,10 @@ for(j=1;j<MAX_VARIABLES;j++)
 			while(first!=NULL)
 			{
                                 if(first->operationType == READ_OPERATION) {
-				  sprintf(log_desc,"TID %d lock type read; ",first->tid);
+				  sprintf(log_desc,"TRNID %d lock type read; ",first->trnid);
                                 }
                                 else if(first->operationType == WRITE_OPERATION) {
-				  sprintf(log_desc,"TID %d lock type write; ",first->tid);
+				  sprintf(log_desc,"TRNID %d lock type write; ",first->trnid);
                                 }
 				logString(log_desc);
 				first=first->nextOperationSite;
@@ -445,10 +445,10 @@ for(j=1;j<MAX_VARIABLES;j++)
 			while(first!=NULL)
 			{
                                 if(first->operationType == READ_OPERATION) {
-				  sprintf(log_desc,"TID %d lock type read; ",first->tid);
+				  sprintf(log_desc,"TRNID %d lock type read; ",first->trnid);
                                 }
                                 else if(first->operationType == WRITE_OPERATION) {
-				  sprintf(log_desc,"TID %d lock type write; ",first->tid);
+				  sprintf(log_desc,"TRNID %d lock type write; ",first->trnid);
                                 }
 				
 				logString(log_desc);
@@ -495,10 +495,10 @@ if(op->transactionType == READONLY_TRANSACTION )
 {
 	      if(op->operationType==READ_OPERATION) 				   	
 	      {
-		if(checkReadAvailability(site_No,op->varNo,op->tid) == 0) 			   
+		if(checkReadAvailability(site_No,op->varNo,op->trnid) == 0) 			   
 		{
 			   op->operationStatusAtSites[site_No]=OPERATION_REJECTED;
-			   sprintf(log_desc,"Rejecting read for tid %d on var %d @ site %d because site has just recovered\n", op->tid, op->varNo, site_No) ;
+			   sprintf(log_desc,"Rejecting read for trnid %d on var %d @ site %d because site has just recovered\n", op->trnid, op->varNo, site_No) ;
 			   logString(log_desc);	
 			   return;
 		}
@@ -518,10 +518,10 @@ if(op->transactionType == READWRITE_TRANSACTION )
 
 	      if(op->operationType==READ_OPERATION) 				   	
 	      	{
-		 if(checkReadAvailability(site_No,op->varNo,op->tid) == 0) 		   
+		 if(checkReadAvailability(site_No,op->varNo,op->trnid) == 0) 		   
 			{			
 			   op->operationStatusAtSites[site_No]=OPERATION_REJECTED;
-                           sprintf(log_desc,"Rejecting read for tid %d on var %d @ site %d because site has just recovered\n", op->tid, op->varNo, site_No) ;
+                           sprintf(log_desc,"Rejecting read for trnid %d on var %d @ site %d because site has just recovered\n", op->trnid, op->varNo, site_No) ;
 			   logString(log_desc);	
           		   return;
 			}	
@@ -531,14 +531,14 @@ if(op->transactionType == READWRITE_TRANSACTION )
 	     		
 		if(op->operationType==READ_OPERATION || op->operationType== WRITE_OPERATION)
 		{
-		if(checkLockIsNecessary(site_No,op->varNo,op->tid,op->operationType) == 1)  
+		if(checkLockIsNecessary(site_No,op->varNo,op->trnid,op->operationType) == 1)  
 			{  UpdateVersionTable(site_No,op->varNo,op);
 			   op->operationStatusAtSites[site_No]=OPERATION_COMPLETE;  
 			   return;
 			}   
 		
                	
-		int request=checkConflictAndDeadlockPrevention(site_No,op->varNo,op->tid,op->transactionTimestamp,op->operationType);
+		int request=checkConflictAndDeadlockPrevention(site_No,op->varNo,op->trnid,op->transactionTimestamp,op->operationType);
 		
 		if((request==0) || (request==2)) 
 		  {	
@@ -562,14 +562,14 @@ if(op->transactionType == READWRITE_TRANSACTION )
 	if(op->operationType==END_OPERATION)
 	{			
 		UpdateVersionTable(site_No,-1,op);        
-		releaseLocks(site_No,op->tid);		  
+		releaseLocks(site_No,op->trnid);		  
 		op->operationStatusAtSites[site_No]=OPERATION_COMPLETE;
 		return;
 	}
 
 	if(op->operationType == ABORT_OPERATION)
 	{
-		releaseLocks(site_No,op->tid);
+		releaseLocks(site_No,op->trnid);
 		op->operationStatusAtSites[site_No]=OPERATION_COMPLETE;
 		return;
 	}
@@ -642,7 +642,7 @@ if(op->transactionType == MISCELLANEOUS_TRANSACTION)
 ************************************************************************************************************************************/
 
 
-void releaseLocks(int site_No,int tid)
+void releaseLocks(int site_No,int trnid)
 {
 int j;
 	for(j=1;j<=MAX_VARIABLES;j++)
@@ -655,7 +655,7 @@ int j;
 	     			struct operation *node=sites[site_No].lock_Entries[j].first_active_operation;
 				if(node!=NULL)
 				{
-				if(node->tid==tid)
+				if(node->trnid==trnid)
 				 {
 				  sites[site_No].lock_Entries[j].first_active_operation=NULL;    
 				  if(sites[site_No].lock_Entries[j].first_blocked_operation!=NULL) 
@@ -671,14 +671,14 @@ int j;
 				if(current!=NULL)
 				{
 				  if(current->nextOperationSite==NULL)  
-			 	     if(current->tid==tid)
+			 	     if(current->trnid==trnid)
 					   sites[site_No].lock_Entries[j].first_blocked_operation=NULL;
 				  else             
 				  {
 				     	struct operation *previous=current;
 					while(current!=NULL)
 					{
-						if(current->tid==tid)
+						if(current->trnid==trnid)
 						 {   
 						     current=current->nextOperationSite;	
 						     previous->nextOperationSite=current;
@@ -722,7 +722,7 @@ for(i=1;i<=(MAX_SITES-1);i++)
 			
 			struct version *newNode = (struct version *) malloc (sizeof(struct version));
                         sites[i].variable[j].flag=1;
-			newNode->tid=-1;
+			newNode->trnid=-1;
                         newNode->value=10*j;
  			newNode->R_Timestamp=0;
 			newNode->W_Timestamp=0;
@@ -739,7 +739,7 @@ for(i=1;i<=(MAX_SITES-1);i++)
 			{
 			struct version *newNode = (struct version *) malloc (sizeof(struct version));
                         sites[i].variable[j].flag=1;
-			newNode->tid=-1;
+			newNode->trnid=-1;
                         newNode->value=10*j;
  			newNode->R_Timestamp=0;
 			newNode->W_Timestamp=0;
