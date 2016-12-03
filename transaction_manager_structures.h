@@ -1,6 +1,6 @@
 #define MAX_TRANSACTIONS	10000
-#define MISCELLANEOUS_TID       9999             //All dump/fail/recover operations will be assigned to this tid
-#define MAX_WAITING_TICKS	20		//Max number of ticks before which the operation for which an operation can be blocked
+#define MISCELLANEOUS_TID       9999             
+#define MAX_WAITING_TICKS	20		                 
 
 #include "globals.h"
 #include <time.h>
