@@ -1,4 +1,4 @@
-#include "globals.h"
+#include "globalvar.h"
 #define MAX_TRANSACTION_TIMESTAMP 10000
 void initializeSiteData() ;
 void performOperation(struct operation *opn, int siteNo) ;
