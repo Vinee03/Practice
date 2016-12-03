@@ -3,7 +3,7 @@
 
 #include "site.h"
 
-int availableSites[MAX_SITES] ; //The array stores a value '1' if a given site is avaiable and stores '0' if site is down, where site is indexed by its position in the array
+int availableSites[MAX_SITES] ; //If the given site is available, the array stores value '1'. If the given site is unavailable, it stores the value '0'.
 void releaseLocks(int site_No,int tid);
 
 /********************************************************************************************************************************
@@ -31,9 +31,9 @@ int checkReadAvailability(int site_No,int varNo,int tid)
 struct operation *current = sites[site_No].lock_Entries[varNo].first_active_operation;
 if(current!=NULL)
 {
-	if(current->tid==tid && current->operationType==WRITE_OPERATION)  //If the same transaction already has the write lock
+	if(current->tid==tid && current->operationType==WRITE_OPERATION)  
 	{
-		return 1;  // Return that the item is availaible to be read;
+		return 1;  
 	}
 }
 
@@ -77,18 +77,19 @@ return valueRead;
 **********************************************************************************************************************/
 /***************************************************************************************************************************
                                           Function siteFail Starts 
-                                   It deletes the values from the Lock Table
+                                It deletes the values from the Lock Table
+				It checks if the variable is present in the site, using the if condition and deletes accordingly.
 ****************************************************************************************************************************/
 void siteFail(int site_No)
 {
 int j;
 	for(j=1;j<=MAX_VARIABLES;j++)
 	{
-	    if(sites[site_No].lock_Entries[j].flag==1)  //If the variable is present at that site
-		{
+	    if(sites[site_No].lock_Entries[j].flag==1)  
+	    {
 			sites[site_No].lock_Entries[j].first_active_operation=NULL;	
 			sites[site_No].lock_Entries[j].first_blocked_operation=NULL;
-		}
+	    }
 	}
 
 }
@@ -109,9 +110,8 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 { 
    if(sites[site_No].variable[varNo].flag==1)
      {
-	    if(op->operationType==WRITE_OPERATION)     //Only if the operation type is write
+	    if(op->operationType==WRITE_OPERATION)     
 	       { 	
-		// Run through and check if the first write has been done
 		 	struct version* current = sites[site_No].variable[varNo].head;
 	         	int exist=0;
 		     	while(current!=NULL)
@@ -124,7 +124,7 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 				current=current->next;
 			 } 
 
-		//If there is no entry for that transaction;added it	
+		
 			if(exist==0)
 			{
 				struct version *newNode = (struct version *) malloc (sizeof(struct version));
@@ -137,32 +137,29 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 			}
                 }
 
-		if(op->operationType==READ_OPERATION)   //Only if the operation is a read operation
+		if(op->operationType==READ_OPERATION)   
 		{
-			// Run through and check if the first write has been done;then set it for read
 		 	struct version* current = sites[site_No].variable[varNo].head;
 	         	int exist=0;
 		     	while(current!=NULL)
 			 {
 				if((op->tid==current->tid)&&(current->W_Timestamp==MAX_TRANSACTION_TIMESTAMP))
 				{
-					op->valueRead=current->value;  //Returning the value Read
+					op->valueRead=current->value;  
 					exist=1;
 				}   
 				current=current->next;
 			 }
 			 
-			 if(exist==0)  //If no write has been done till now,then read the recent committed value
+			 if(exist==0)  
 			 {
-			    op->valueRead=readonly_Versiontable(site_No,varNo,op->transactionTimestamp);  //Returning the read value; 
+			    op->valueRead=readonly_Versiontable(site_No,varNo,op->transactionTimestamp);   
 			 }
 			 
 
 	        }
-     }   //If for checking variable present ends.
-
+     }   
 }
-//Only if the operation type is commit;update the R and W Timestamp for that transaction in all variables;and make variable read available
      if(op->operationType==END_OPERATION)  
       { 
 		
@@ -179,7 +176,7 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 				{
 					current->W_Timestamp=op->transactionTimestamp;
 					current->R_Timestamp=op->transactionTimestamp;    
-					if(checkReadAvailability(site_No,j,op->tid)==0)  //If the variable is unavailable make it available
+					if(checkReadAvailability(site_No,j,op->tid)==0) 
 						readEnableDisable(site_No,j,1);   		 
 				}   
 				current=current->next;
@@ -198,21 +195,20 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 ***********************************************************************************************************************************/
 /**********************************************************************************************************************************
 					 Function addToActiveList Starts
-			It first checks the if the same transaction is being added. If the same transaction is added,
+			It first checks the if the same transaction is being added i.e. request=0. If the same transaction is added,
 			it sets the first active operation as node. Otherwise it traverses the entire site and sets the trasaction as node.
 ************************************************************************************************************************************/
 
 void addToActiveList(int site_No,int varNo,struct operation *node,int request)
 {
 
-if(request==0)   // Same transaction is getting added 
+if(request==0)    
 {
 	sites[site_No].lock_Entries[varNo].first_active_operation = node;
 	node->nextOperationSite = NULL;
 }
 else
 {
-	//Traverse the list
 	struct operation *current = sites[site_No].lock_Entries[varNo].first_active_operation;
 	while(current->nextOperationSite != NULL)
 		current=current->nextOperationSite;
@@ -236,14 +232,13 @@ else
 void addToBlockedList(int site_No,int varNo,struct operation *node)
 {
 
-if(sites[site_No].lock_Entries[varNo].first_blocked_operation == NULL)  //No blocked operation
+if(sites[site_No].lock_Entries[varNo].first_blocked_operation == NULL)  
 {       
 	sites[site_No].lock_Entries[varNo].first_blocked_operation=node;
 	node->nextOperationSite = NULL;
 } 
 else
 {
-//Traverse the list
 struct operation *current = sites[site_No].lock_Entries[varNo].first_blocked_operation;
 while(current->nextOperationSite != NULL)
 	current=current->nextOperationSite;
@@ -258,7 +253,8 @@ node->nextOperationSite=NULL;
 ******************************************************************************************************************************/
 /******************************************************************************************************************************
 					     Function checkLockIsNecessary Starts
-			     It checks whether the transaction requires a lock on the data item or not.
+			     It checks whether the transaction requires a lock on the data item or not 
+			     by checking whether the transaction has same or higher lock.
 			     If the transaction requires a lock, it returns 0. Otherwise it returns 1. 
 			     
 ********************************************************************************************************************************/
@@ -266,18 +262,18 @@ node->nextOperationSite=NULL;
 int checkLockIsNecessary (int site_No,int varNo,int tid,int lock_Mode)
 {
 		struct operation *first=sites[site_No].lock_Entries[varNo].first_active_operation ;
-                //printf("first_active %d\n", sites[site_No].lock_Entries[varNo].first_active_operation->tid) ;
-                if(first != NULL ) {
-		  if(first->tid!=tid)  //If the transaction tid is not current
+                if(first != NULL )
+		{
+		  if(first->tid!=tid)  
 		  {
 			return 0;
 		  }		
 		  else
 		  {
-			if(first->operationType >= lock_Mode)   //If the transaction has the same lock or a higher lock;
-			   return 1;
+			if(first->operationType >= lock_Mode)   
+				return 1;
 			else
-			   return 0; //Request for W Lock,Has R Lock Currently
+			   return 0; 
 			     
 		  }
                }
@@ -301,7 +297,7 @@ int checkConflictAndDeadlockPrevention(int site_No,int varNo,int tid,int timesta
 		int found=0;
                 struct operation *first=sites[site_No].lock_Entries[varNo].first_active_operation;
 	        	
-//If no active operations just grant the lock;on conflict
+
 if(first ==NULL)
 {        
  	return 0; 		
@@ -355,13 +351,15 @@ else
 						Function checkConflictAndDeadlockPrevention Ends
 ************************************************************************************************************************************/
 
-//////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
+/***********************************************************************************************************************************
+						 Function doDump Starts		 
+				It performs dump operation on the values passed from perfomOperation function.
+***********************************************************************************************************************************/
 void doDump(struct operation *op, int site_No)
 {
 char log_desc[1000];
 int j,temp;
-if(op->varNo==ALL_VARIABLES)       // All variables at that site
+if(op->varNo==ALL_VARIABLES)       
 {
  sprintf(log_desc,"Variables at Site:%d\n",site_No);
  logString(log_desc);
@@ -382,9 +380,13 @@ else
 sprintf(log_desc,"\n") ;
 logString(log_desc);
 }
-//////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////
+/***********************************************************************************************************************************
+						 Function doDump Ends
+***********************************************************************************************************************************/
+/***********************************************************************************************************************************
+						 Function printActiveandBlockedList Starts
+					It prints the active and blocked lists of all sites.	 
+************************************************************************************************************************************/
 void printActiveandBlockedList(struct operation *op, int site_No)
 {
 
@@ -419,11 +421,6 @@ for(j=1;j<MAX_VARIABLES;j++)
 				first=first->nextOperationSite;
 			}		  
 		}
-		/*else
-		{
-		  sprintf(log_desc,"  Empty");
-		  logString(log_desc);	
-		}*/
 	}
   }
 if(flagListEmpty == 1) {
@@ -458,11 +455,6 @@ for(j=1;j<MAX_VARIABLES;j++)
 				first=first->nextOperationSite;
 			}		  
 		}
-		/*else
-		{
-			  sprintf(log_desc,"  Empty");
-			  logString(log_desc);
-		}*/
 	}
   }
 if(flagListEmpty == 1) {
@@ -474,25 +466,26 @@ logString(log_desc);
 
 
 }
-//////////////////////////////////////////////////////////////////////
+
+/***********************************************************************************************************************************
+						 Function printActiveandBlockedList Ends	
+************************************************************************************************************************************/
 
 
 
 
-
-
-
-
-
-
-
+/***********************************************************************************************************************************
+						 Function performOperation Starts
+		It first checks whether the site is down or not. If the site is down, it rejects the operation.
+		It then checks the transaction type and performs the operation accordingly.
+************************************************************************************************************************************/
 
 void performOperation(struct operation *op, int site_No)
 {
 
 char log_desc[1000];
 
-if((availableSites[site_No]==0)  && op->operationType != RECOVER_OPERATION ) //if the site is down simply reject the operation
+if((availableSites[site_No]==0)  && op->operationType != RECOVER_OPERATION ) 
 {
 	op->operationStatusAtSites[site_No]=OPERATION_REJECTED;
 	return;
@@ -500,9 +493,9 @@ if((availableSites[site_No]==0)  && op->operationType != RECOVER_OPERATION ) //i
 
 if(op->transactionType == READONLY_TRANSACTION )
 {
-	      if(op->operationType==READ_OPERATION) 				   //If the operation is read operation	
+	      if(op->operationType==READ_OPERATION) 				   	
 	      {
-		if(checkReadAvailability(site_No,op->varNo,op->tid) == 0) 			   //If the variable is not availaible to be read
+		if(checkReadAvailability(site_No,op->varNo,op->tid) == 0) 			   
 		{
 			   op->operationStatusAtSites[site_No]=OPERATION_REJECTED;
 			   sprintf(log_desc,"Rejecting read for tid %d on var %d @ site %d because site has just recovered\n", op->tid, op->varNo, site_No) ;
@@ -523,16 +516,16 @@ if(op->transactionType == READONLY_TRANSACTION )
 if(op->transactionType == READWRITE_TRANSACTION )
 {
 
-	      if(op->operationType==READ_OPERATION) 				   //If the operation is read operation	
+	      if(op->operationType==READ_OPERATION) 				   	
 	      	{
-		 if(checkReadAvailability(site_No,op->varNo,op->tid) == 0) 		   //If the variable is not availaible to be read
+		 if(checkReadAvailability(site_No,op->varNo,op->tid) == 0) 		   
 			{			
 			   op->operationStatusAtSites[site_No]=OPERATION_REJECTED;
                            sprintf(log_desc,"Rejecting read for tid %d on var %d @ site %d because site has just recovered\n", op->tid, op->varNo, site_No) ;
 			   logString(log_desc);	
           		   return;
 			}	
-		//if the variable is available
+	
 		}
 	
 	     		
@@ -544,8 +537,7 @@ if(op->transactionType == READWRITE_TRANSACTION )
 			   return;
 			}   
 		
-               	//Transaction needs to acquire the lock
-		
+               	
 		int request=checkConflictAndDeadlockPrevention(site_No,op->varNo,op->tid,op->transactionTimestamp,op->operationType);
 		
 		if((request==0) || (request==2)) //Lock Granted,add it to active list
@@ -561,16 +553,16 @@ if(op->transactionType == READWRITE_TRANSACTION )
 			op->operationStatusAtSites[site_No]=OPERATION_BLOCKED;
 			return;
 		  }
-		else    //If the transaction needs to be aborted
+		else    
 		  {
 			op->operationStatusAtSites[site_No]=OPERATION_REJECTED;
 			return;
 		  }		
 		}
 	if(op->operationType==END_OPERATION)
-	{	//printf("\nvarNo sent by op:%d",op->varNo);
-		UpdateVersionTable(site_No,-1,op);        // Update R and W Timestamps; and make read available
-		releaseLocks(site_No,op->tid);		  // Release all locks for transaction 'tid'.
+	{			
+		UpdateVersionTable(site_No,-1,op);        
+		releaseLocks(site_No,op->tid);		  
 		op->operationStatusAtSites[site_No]=OPERATION_COMPLETE;
 		return;
 	}
@@ -591,8 +583,8 @@ if(op->transactionType == MISCELLANEOUS_TRANSACTION)
 	{       
   		sprintf(log_desc,"Site Failed: %d\n",site_No);
 		logString(log_desc);	
-		availableSites[site_No]=0;		//Making the Site Down
-		siteFail(site_No);                      // Forget the lock information
+		availableSites[site_No]=0;		
+		siteFail(site_No);                      
 		op->operationStatusAtSites[site_No]=OPERATION_COMPLETE;
 		return;
 	}
@@ -600,12 +592,12 @@ if(op->transactionType == MISCELLANEOUS_TRANSACTION)
 	if(op->operationType==RECOVER_OPERATION)		
 	{
 		int j;
-		availableSites[site_No]=1;		//Making the Site Up
+		availableSites[site_No]=1;		
 		sprintf(log_desc,"Site Recovered: %d\n",site_No);
 		logString(log_desc);	
-		for(j=1;j<MAX_VARIABLES;j++)	{	//Make all the variables at that site as read disable
-                  //printf("site %d flag %d %d\n", site_No, j, sites[site_No].variable[j].flag);
-                  if(sites[site_No].variable[j].flag==1) {
+		for(j=1;j<MAX_VARIABLES;j++)	
+		{	
+                   if(sites[site_No].variable[j].flag==1) {
 		     if(j%2==0)
 		      {		
                 	readEnableDisable(site_No,j,0);
@@ -641,52 +633,53 @@ if(op->transactionType == MISCELLANEOUS_TRANSACTION)
 
 }
 
-//////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
+/***********************************************************************************************************************************
+						 Function performOperation Ends	
+************************************************************************************************************************************/
+/***********************************************************************************************************************************
+						 Function releaseLocks Starts
+			 It releases all the Locks after checking whether the Lock is in Active List or Blocked List.
+************************************************************************************************************************************/
 
 
-/* Release Locks releases all the locks for the transaction */
 void releaseLocks(int site_No,int tid)
 {
 int j;
 	for(j=1;j<=MAX_VARIABLES;j++)
 	{
-		if(sites[site_No].lock_Entries[j].flag==1)  //If the variable is present at that site
+		if(sites[site_No].lock_Entries[j].flag==1)  
 		{
 			
 
-			//Scan the Active List
+			
 	     			struct operation *node=sites[site_No].lock_Entries[j].first_active_operation;
 				if(node!=NULL)
 				{
 				if(node->tid==tid)
 				 {
-				  sites[site_No].lock_Entries[j].first_active_operation=NULL;    //Remove the active lock
-				 // printf("Release Locks:%d",tid);
+				  sites[site_No].lock_Entries[j].first_active_operation=NULL;    
 				  if(sites[site_No].lock_Entries[j].first_blocked_operation!=NULL) 
 				   {	
 					sites[site_No].lock_Entries[j].first_active_operation=sites[site_No].lock_Entries[j].first_blocked_operation;
-					//printf("Putting in active %d",sites[site_No].lock_Entries[j].first_blocked_operation->tid);
 					sites[site_No].lock_Entries[j].first_blocked_operation=sites[site_No].lock_Entries[j].first_blocked_operation->nextOperationSite;
 					performOperation(sites[site_No].lock_Entries[j].first_active_operation, site_No);   //Perform the operation 
 				   }
 				 }
 				}
 		
-			//Scan the Blocked List
-	     			struct operation *current=sites[site_No].lock_Entries[j].first_blocked_operation;
+				struct operation *current=sites[site_No].lock_Entries[j].first_blocked_operation;
 				if(current!=NULL)
 				{
-				  if(current->nextOperationSite==NULL)  // If only one element
+				  if(current->nextOperationSite==NULL)  
 			 	     if(current->tid==tid)
 					   sites[site_No].lock_Entries[j].first_blocked_operation=NULL;
-				  else             //More than one element
+				  else             
 				  {
 				     	struct operation *previous=current;
 					while(current!=NULL)
 					{
 						if(current->tid==tid)
-						 {   //printf("Inside Realease Blocked : %d %d",current->tid,j);
+						 {   
 						     current=current->nextOperationSite;	
 						     previous->nextOperationSite=current;
 						     previous=current;
@@ -708,16 +701,15 @@ int j;
 
 }
 
+/***********************************************************************************************************************************
+						 Function releaseLocks Ends
+************************************************************************************************************************************/
 
-//////////////////////////////////////////////////////////////////////
+/***********************************************************************************************************************************
+						Function initializeSiteData Starts
+				             It initializes all sites and  variables. 
+************************************************************************************************************************************/
 
-
-
-
-
-/////////////////// Initializing Sites	///////////////////////
-
-///Initializing variables 
 void initializeSiteData()
 {
 int i,j,k;
@@ -727,7 +719,7 @@ for(i=1;i<=(MAX_SITES-1);i++)
              { 
                   if(j%2==0)
                       { 
-			// For Version Table, The first one is dummy insertion
+			
 			struct version *newNode = (struct version *) malloc (sizeof(struct version));
                         sites[i].variable[j].flag=1;
 			newNode->tid=-1;
@@ -736,9 +728,8 @@ for(i=1;i<=(MAX_SITES-1);i++)
 			newNode->W_Timestamp=0;
 			newNode->next=NULL;
 			sites[i].variable[j].head=newNode;
-			// For Lock Table
 			sites[i].lock_Entries[j].flag=1;
-			sites[i].lock_Entries[j].readAvailable=1;// Initially the variable needs to be made available for reading 
+			sites[i].lock_Entries[j].readAvailable=1; 
 					
 
 		      }
@@ -746,7 +737,6 @@ for(i=1;i<=(MAX_SITES-1);i++)
 		      {
 			if(i==((j%10)+1))
 			{
-			// For Version Table, The first one is dummy insertion
 			struct version *newNode = (struct version *) malloc (sizeof(struct version));
                         sites[i].variable[j].flag=1;
 			newNode->tid=-1;
@@ -755,9 +745,9 @@ for(i=1;i<=(MAX_SITES-1);i++)
 			newNode->W_Timestamp=0;
 			newNode->next=NULL;
 			sites[i].variable[j].head=newNode;
-			// For Lock Table
+
 			sites[i].lock_Entries[j].flag=1;
-			sites[i].lock_Entries[j].readAvailable=1;// Initially the variable needs to be made available for reading 
+			sites[i].lock_Entries[j].readAvailable=1; 
 			}
 		      }			
 
@@ -766,7 +756,6 @@ for(i=1;i<=(MAX_SITES-1);i++)
 
 }
 
-//Rahul Pandey
 int siteNo ;
 for(siteNo = 1; siteNo < MAX_SITES; siteNo++) {
   availableSites[siteNo] = 1 ;  
@@ -774,123 +763,8 @@ for(siteNo = 1; siteNo < MAX_SITES; siteNo++) {
 }
 }
 
+/***********************************************************************************************************************************
+						 Function initializeSiteData Ends
+************************************************************************************************************************************/
 
 
-/*
-int main()
-{
-
- 
-initializeSiteData();
-
-int i,j,k;
-
-
-/// Manually insertion dummy values
-for(i=1;i<=MAX_SITES;i++)
-{     
-	  for(j=1;j<=MAX_VARIABLES;j++)
-             { 
-                if(sites[i].variable[j].flag==1)  //If that variable is at that site.
-                {   
-                       for(k=1;k<=5;k++)
-		     {
-			struct version *newNode = (struct version *) malloc (sizeof(struct version));
-			newNode->tid=1;
-                        newNode->value=10*10*j+k;
- 			newNode->R_Timestamp=k;
-			newNode->W_Timestamp=k;
-			newNode->next=sites[i].variable[j].head;
-			sites[i].variable[j].head=newNode;	
-                     }
-                }
-	     }
-}
-
-//// 
-
-
-
-struct operation op1,op2,op3,op4,op5,op6,op7,op8;
-
-
-	op1.tid=6;
-	op1.operationTimestamp=10;
-  	op1.operationType=1;
-  	op1.valueToWrite=898;
-  	
-	op2.tid=6;
-	op2.operationTimestamp=10;
-  	op2.operationType=1;
-  	op2.valueToWrite=9000;
-
-	op3.tid=7;
-	op3.operationTimestamp=11;
-  	op3.operationType=1;
-  	op3.valueToWrite=888;
-
-	op4.tid=7;
-	op4.operationTimestamp=11;
-  	op4.operationType=1;
-  	op4.valueToWrite=599;
-
-	op5.tid=7;
-	op5.operationTimestamp=11;
-  	op5.operationType=1;
-  	op5.valueToWrite=88888;
-
-	op6.tid=6;
-	op6.operationTimestamp=10;
-  	op6.operationType=2;
-  		
-	op7.tid=7;
-	op7.operationTimestamp=11;
-  	op7.operationType=2;
-
-	op8.tid=5;
-	op8.operationTimestamp=9;
-  	op8.operationType=1;	
-	op8.valueToWrite=8898;
-
-
-UpdateVersionTable(10,2,&op1);
-UpdateVersionTable(10,2,&op2);
-UpdateVersionTable(10,3,&op3);
-UpdateVersionTable(10,4,&op4);
-UpdateVersionTable(10,4,&op5);
-UpdateVersionTable(10,-1,&op6);
-UpdateVersionTable(10,-1,&op7);
-UpdateVersionTable(10,2,&op8);
-
-printf("\n Value Read:%d",readonly_Versiontable(10,4,12));
-*/
-/*
-
-for(i=1;i<=(MAX_SITES-1);i++)
-{     
-printf("\n Site No %d",i-1);
-	  for(j=1;j<=(MAX_VARIABLES-1);j++)
-             { 
-                if(sites[i].variable[j].flag==1)
-                {
-		printf("\n Variable No : %d",j);
-                
-		struct version* current = sites[i].variable[j].head;
-		while (current != NULL) {
-                printf("\t Value: %d",current->value);
-		printf("\t Value: %d",current->tid);
-		printf("\t Value: %d",current->R_Timestamp);
-		printf("\t Value: %d",current->W_Timestamp);
-		printf("\n");
-		current=current->next;
-		}
-
-                }
-	     }
-}
-
-
-
-
-return 0;
-}*/
