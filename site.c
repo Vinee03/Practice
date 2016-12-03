@@ -6,17 +6,25 @@
 int availableSites[MAX_SITES] ; //The array stores a value '1' if a given site is avaiable and stores '0' if site is down, where site is indexed by its position in the array
 void releaseLocks(int site_No,int tid);
 
-//////////////////////////////////////////////////////////////////////
-/*read is Enabled is called if a transaction that wrote on ‘varNo’ has committed.read is Disabled for all variables of a site when a site first recovers from a failure.*/
-/* 1 Enable ; 0 for Disable; */
+/********************************************************************************************************************************
+						 Function readEnableDisable Starts	
+			Enable read for committed if the variable is commited and disable read for all 
+			                      variables in the site when a site recovers from failure. 
+                                                1 is used to Enable and 0 is used to Disable
+************************************************************************************************************************************/
 void readEnableDisable(int site_No,int varNo,int enable)
 {
 	sites[site_No].lock_Entries[varNo].readAvailable = enable; 
 }
-//////////////////////////////////////////////////////////////////////
+/******************************************************************************************************************************
+                                                 Function readEnableDisable Ends
+*********************************************************************************************************************************/
 
-/*checkReadAvailability is called for read operations of update transactions.
-Returns ‘1’ if data item ‘varNo’ is available for read else it returns ‘0’.*/
+/**********************************************************************************************************************************
+                                                 Function checkReadAvailability Starts
+				   It checks whether the variable is available for read or not. 
+				   If the variable varNo is available to read it returns 1 otherwise it returns 0. 
+***********************************************************************************************************************************/
 int checkReadAvailability(int site_No,int varNo,int tid)
 {
 
@@ -31,8 +39,13 @@ if(current!=NULL)
 
 return sites[site_No].lock_Entries[varNo].readAvailable;
 }
-//////////////////////////////////////////////////////////////////////
-
+/**********************************************************************************************************************
+                                               Function checkReadAvailability Ends 
+************************************************************************************************************************/
+/*********************************************************************************************************************
+                                            Function readonly_Versiontable starts
+					  It updates the version table with the latest Timestamp. 
+***********************************************************************************************************************/
 
 int readonly_Versiontable(int site_No,int var,int timestamp)
 {
@@ -59,9 +72,13 @@ int readonly_Versiontable(int site_No,int var,int timestamp)
 
 return valueRead;
 }
-//////////////////////////////////////////////////////////////////////
-
-// Forget all the information in lock table
+/********************************************************************************************************************
+                                      Function readonly_Versiontable Ends
+**********************************************************************************************************************/
+/***************************************************************************************************************************
+                                          Function siteFail Starts 
+                                   It deletes the values from the Lock Table
+****************************************************************************************************************************/
 void siteFail(int site_No)
 {
 int j;
@@ -75,14 +92,16 @@ int j;
 	}
 
 }
-
-
-
-//////////////////////////////////////////////////////////////////////
-//A new entry will be added if the transaction issues a first write and value of R-Timestamp and 
-// W-Timestamp is set to very high. For that further transactions writes this value will be updated.
-//If the transaction commits the R-Timestamp and W-Timestamp will be set accordingly.
-//If the transaction aborts then those entries will be deleted from the list.
+/*******************************************************************************************************************************
+                                           Function siteFail Ends
+**********************************************************************************************************************************/
+/**********************************************************************************************************************************
+					   Function UpdateVersionTable Starts 
+					   There are three things which happen:
+1. If a transaction issues a first write: The value of Read Timestamp and Write Timestamp is set to very high. A new entry is made in the Lock Table.
+2. If a transaction is aborted, delete the entries from the Lock Table.
+3. If a transaction is commited, we will set the Read-Timestamp and Write-Timestamp.
+*************************************************************************************************************************************/
 void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 {
    int j;
@@ -174,11 +193,14 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 
 
 }
-
-
-//////////////////////////////////////////////////////////////////////
-
-//*addToActiveList sets the node as the first pointer
+/********************************************************************************************************************************
+					Function UpdateVersionTable Ends
+***********************************************************************************************************************************/
+/**********************************************************************************************************************************
+					 Function addToActiveList Starts
+			It first checks the if the same transaction is being added. If the same transaction is added,
+			it sets the first active operation as node. Otherwise it traverses the entire site and sets the trasaction as node.
+************************************************************************************************************************************/
 
 void addToActiveList(int site_No,int varNo,struct operation *node,int request)
 {
@@ -200,9 +222,16 @@ else
 }
 
 }
-///////////////////////////////////////////////////////////////////////
+/********************************************************************************************************************
+				          Function addToActiveList Ends
+***********************************************************************************************************************/
+/**********************************************************************************************************************
+					  Function addToBlockedList Starts
+		It first checks whether there is blocked operation or not. If there is no first blocked operation,
+					  it sets the first blocked operation as the node. 
+		Else it will traverse the list, and set the next operation as the node. 
+*************************************************************************************************************************/
 
-//*addToBlockedList adds node to the end of blocked list
 
 void addToBlockedList(int site_No,int varNo,struct operation *node)
 {
@@ -224,9 +253,16 @@ node->nextOperationSite=NULL;
 }
 
 }
-///////////////////////////////////////////////////////////////////////
+/**************************************************************************************************************************
+					     Function addToBlockedList Ends
+******************************************************************************************************************************/
+/******************************************************************************************************************************
+					     Function checkLockIsNecessary Starts
+			     It checks whether the transaction requires a lock on the data item or not.
+			     If the transaction requires a lock, it returns 0. Otherwise it returns 1. 
+			     
+********************************************************************************************************************************/
 
-/*checkLockIsNecessary Checks if a transaction ‘tid’ needs to acquire a lock on a data item or if it already has a required or the stronger lock Returns ‘1’ if transaction has the lock else it returns ‘0’ if it needs to acquire a lock.*/
 int checkLockIsNecessary (int site_No,int varNo,int tid,int lock_Mode)
 {
 		struct operation *first=sites[site_No].lock_Entries[varNo].first_active_operation ;
@@ -248,10 +284,16 @@ int checkLockIsNecessary (int site_No,int varNo,int tid,int lock_Mode)
                return 0 ;
 		
 }
-//////////////////////////////////////////////////////////////////////
+/*********************************************************************************************************************************
+						Function checkLockIsNecessary Ends
+************************************************************************************************************************************/
+/*********************************************************************************************************************************
+						Function checkConflictAndDeadlockPrevention Starts
+checkConflictAndDeadlockPrevention checks if transaction tid’s access on data item ‘var’ conflicts with any other transaction in conflicting mode.
+Returns 0 of is there is no conflict and therefore lock can be granted; 1 if requesting tid should be blocked ; -1 if requesting tid should be aborted
 
+************************************************************************************************************************************/
 
-/* checkConflictAndDeadlockPrevention checks if transaction tid’s access on data item ‘var’ conflicts with any other transaction in conflicting mode.Returns 0 of is there is no conflict and therefore lock can be granted; 1 if requesting tid should be blocked ; -1 if requesting tid should be aborted*/
 
 int checkConflictAndDeadlockPrevention(int site_No,int varNo,int tid,int timestamp,int operationType)
 {
@@ -309,6 +351,9 @@ else
 		
     }	 
 }
+/*********************************************************************************************************************************
+						Function checkConflictAndDeadlockPrevention Ends
+************************************************************************************************************************************/
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
