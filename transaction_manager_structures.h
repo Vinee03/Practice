@@ -24,18 +24,18 @@ struct siteInformation {
 
 
 
-  int flag_varNo[MAX_SITES] ;
+  int flag_varNo[MAXIMUM_SITES] ;
   int flag_siteAvailable ;	
   int tick_upTime ;		
 } ;
 typedef struct siteInformation siteInformation ;
-siteInformation siteInfo[MAX_SITES] ;
+siteInformation siteInfo[MAXIMUM_SITES] ;
 
 /**************************************************************************************************************************
                                      struct Transaction Starts          
 *****************************************************************************************************************************/
 struct Transaction {
- struct siteAccessInfo sites_accessed[MAX_SITES];
+ struct siteAccessInfo sites_accessed[MAXIMUM_SITES];
  int timestamp ;
  int flag_transactionValid ;
  int transactionType ;
