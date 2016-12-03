@@ -35,7 +35,7 @@
                                               Struct Operation Starts
 ****************************************************************************************************************************/
 struct operation {
- int tid ;				
+ int trnid ;				
  int operationType ;			
  int operationTimestamp ;
  int transactionType ;			
