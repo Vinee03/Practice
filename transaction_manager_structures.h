@@ -1,3 +1,7 @@
+#define MAX_TRANSACTIONS	10000
+#define MISCELLANEOUS_TID       9999             
+#define MAX_WAITING_TICKS	20		
+#include "globalvar.h"
 #include <time.h>
 
 #define TRANSACTION_COMMITED	1
