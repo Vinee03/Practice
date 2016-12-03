@@ -10,7 +10,7 @@
 
 #define SLEEP_DURATION_MS 	200
 
-int availableSites[MAX_SITES] ;
+int availableSites[MAXIMUM_SITES] ;
 int storeOperation(char *operationString, int operationtimestamp) ;
 int prepareOperationNode(int trnid, int operationType, int varNo, int valueToWrite, int siteNo, int operationtimestamp, struct operation *opn) ;
 void addOperationToTransactionQueue(int trnid, struct operation *opn) ;
@@ -42,26 +42,27 @@ void startTransactionManager() {
       }
       if(T[MISCELLANEOUS_TID].timestamp <= tickNo && T[MISCELLANEOUS_TID].current_opn->operationTimestamp <= tickNo) {
         struct operation *opn = T[MISCELLANEOUS_TID].current_opn ;
-        if(opn->operationType == DUMP_OPERATION) {	//Dump could be on a single site or on all sites containing a specific variable or on all sites for all variables
+        if(opn->operationType == DUMP_OPN)
+	{	//Dump could be on a single site or on all sites containing a specific variable or on all sites for all variables
           if(opn->varNo == ALL_VARIABLES) {
             if(opn->siteNo == ALL_SITES) {	//dump(): The dump is to be performed for all variables on all sites
               int siteNo ;
-              for(siteNo = 1 ; siteNo < MAX_SITES ; siteNo++) {
+              for(siteNo = 1 ; siteNo < MAXIMUM_SITES ; siteNo++) {
                 if(siteInfo[siteNo].flag_siteAvailable == 0)	//We do not send operations to failed sites
                   continue ;
                 performOperation(opn, siteNo) ;		//Send dump operation for the given site
                 int operationStatus = opn->operationStatusAtSites[siteNo] ;
 #ifdef _DEBUG_
-                if(operationStatus == OPERATION_REJECTED)
+                if(operationStatus == OPN_REJECTED)
                  printf("Dump operation rejected @ site %d\n", siteNo) ;
-                if(operationStatus == OPERATION_BLOCKED)
+                if(operationStatus == OPN_BLOCKED)
                  printf("Dump operation @ site %d\n", siteNo) ;
 #endif
-                if(operationStatus != OPERATION_COMPLETE) {
+                if(operationStatus != OPN_COMPLETE) {
 #ifdef _DEBUG_
                   printf("startTransactionManager: site %d did not set dump operation state to complete\n", siteNo ) ;
 #endif
-                  opn->operationStatusAtSites[siteNo] = OPERATION_COMPLETE ;
+                  opn->operationStatusAtSites[siteNo] = OPN_COMPLETE ;
                 }
               }
             }
@@ -73,28 +74,28 @@ void startTransactionManager() {
                 performOperation(opn, opn->siteNo) ;
                 int operationStatus = opn->operationStatusAtSites[opn->siteNo] ;
 #ifdef _DEBUG_
-                if(operationStatus == OPERATION_REJECTED)
+                if(operationStatus == OPN_REJECTED)
                  printf("Dump operation rejected @ site %d\n", opn->siteNo) ;
-                if(operationStatus == OPERATION_BLOCKED)
+                if(operationStatus == OPN_BLOCKED)
                  printf("Dump operation @ site %d\n", opn->siteNo) ;
 #endif
-                if(operationStatus != OPERATION_COMPLETE) {
+                if(operationStatus != OPN_COMPLETE) {
 #ifdef _DEBUG_
                   printf("startTransactionManager: site %d did not set dump operation state to complete\n", opn->siteNo ) ;
 #endif
-                  opn->operationStatusAtSites[opn->siteNo] = OPERATION_COMPLETE ;
+                  opn->operationStatusAtSites[opn->siteNo] = OPN_COMPLETE ;
                   int operationStatus = opn->operationStatusAtSites[opn->siteNo] ;
 #ifdef _DEBUG_
-                  if(operationStatus == OPERATION_REJECTED)
+                  if(operationStatus == OPN_REJECTED)
                    printf("Dump operation rejected @ site %d\n", opn->siteNo) ;
-                  if(operationStatus == OPERATION_BLOCKED)
+                  if(operationStatus == OPN_BLOCKED)
                    printf("Dump operation @ site %d\n", opn->siteNo) ;
 #endif
-                  if(operationStatus != OPERATION_COMPLETE) {
+                  if(operationStatus != OPN_COMPLETE) {
 #ifdef _DEBUG_
                     printf("startTransactionManager: site %d did not set dump operation state to complete\n", opn->siteNo ) ;
 #endif
-                    opn->operationStatusAtSites[opn->siteNo] = OPERATION_COMPLETE ;
+                    opn->operationStatusAtSites[opn->siteNo] = OPN_COMPLETE ;
                   }
                 }
               }
@@ -111,66 +112,66 @@ void startTransactionManager() {
                performOperation(opn, siteNo) ;
                int operationStatus = opn->operationStatusAtSites[siteNo] ;
 #ifdef _DEBUG_
-               if(operationStatus == OPERATION_REJECTED)
+               if(operationStatus == OPN_REJECTED)
                 printf("Dump operation rejected @ site %d\n", siteNo) ;
-               if(operationStatus == OPERATION_BLOCKED)
+               if(operationStatus == OPN_BLOCKED)
                 printf("Dump operation @ site %d\n", siteNo) ;
 #endif
-               if(operationStatus != OPERATION_COMPLETE) {
+               if(operationStatus != OPN_COMPLETE) {
 #ifdef _DEBUG_
                  printf("startTransactionManager: site %d did not set dump operation state to complete\n", siteNo ) ;
 #endif
-                 opn->operationStatusAtSites[siteNo] = OPERATION_COMPLETE ;
+                 opn->operationStatusAtSites[siteNo] = OPN_COMPLETE ;
                }
               }
             }
             else {	//Variable number is even and it's replicated
               int siteNo ;
-              for(siteNo = 1 ; siteNo < MAX_SITES ; siteNo++) {
+              for(siteNo = 1 ; siteNo < MAXIMUM_SITES ; siteNo++) {
                 if(siteInfo[siteNo].flag_siteAvailable == 0)	//We do not send operations to failed sites
                   continue ;
                 performOperation(opn, siteNo) ;		//Send dump operation for the given site
                 int operationStatus = opn->operationStatusAtSites[siteNo] ;
 #ifdef _DEBUG_
-                if(operationStatus == OPERATION_REJECTED)
+                if(operationStatus == OPN_REJECTED)
                  printf("Dump operation rejected @ site %d\n", siteNo) ;
-                if(operationStatus == OPERATION_BLOCKED)
+                if(operationStatus == OPN_BLOCKED)
                  printf("Dump operation blocked @ site %d\n", siteNo) ;
 #endif
-                if(operationStatus != OPERATION_COMPLETE) {
+                if(operationStatus != OPN_COMPLETE) {
 #ifdef _DEBUG_
                   printf("startTransactionManager: site %d did not set dump operation state to complete\n", siteNo ) ;
 #endif
-                  opn->operationStatusAtSites[siteNo] = OPERATION_COMPLETE ;
+                  opn->operationStatusAtSites[siteNo] = OPN_COMPLETE ;
                 }
               }
             }
           }
         }
-        else if(opn->operationType == QUERY_STATE_OPERATION ) {
+        else if(opn->operationType == QUERY_STATE_OPN ) {
 	  int siteNo ;
-	  for(siteNo = 1 ; siteNo < MAX_SITES ; siteNo++) {
+	  for(siteNo = 1 ; siteNo < MAXIMUM_SITES ; siteNo++) {
 	    if(siteInfo[siteNo].flag_siteAvailable == 0)    //We do not send operations to failed sites
 	      continue ;
 	    performOperation(opn, siteNo) ;         //Send dump operation for the given site
 	    int operationStatus = opn->operationStatusAtSites[siteNo] ;
 #ifdef _DEBUG_
-	    if(operationStatus == OPERATION_REJECTED)
+	    if(operationStatus == ON_REJECTED)
 	    {
 	        sprintf(log_desc,"Query state operation rejected @ site %d\n", siteNo) ;
 		logString(log_desc) ;
 	    }
-	    if(operationStatus == OPERATION_BLOCKED)
+	    if(operationStatus == ON_BLOCKED)
 	    {   sprintf(log_desc,"Query state operation blocked @ site %d\n", siteNo) ;
 		logString(log_desc) ;
 	    }
 #endif
-	    if(operationStatus != OPERATION_COMPLETE) {
+	    if(operationStatus != OPN_COMPLETE) {
 #ifdef _DEBUG_
 	      sprintf(log_desc,"startTransactionManager: site %d did not set querystate operation state to complete\n", siteNo ) ;
 	      logString(log_desc) ;
 #endif
-	      opn->operationStatusAtSites[siteNo] = OPERATION_COMPLETE ;
+	      opn->operationStatusAtSites[siteNo] = OPN_COMPLETE ;
 	    }
           }
 	  int transactionID ;
@@ -189,11 +190,11 @@ void startTransactionManager() {
 	      }
 	    }
 	    else if(T[transactionID].current_opn->operationTimestamp < tickNo){
-	      if(T[transactionID].current_opn->operationType == READ_OPERATION) {
+	      if(T[transactionID].current_opn->operationType == READ_OPN) {
 		sprintf(log_desc, "startTransactionManager: querystate- Transaction ID: %d is waiting for operation read on varNo %d arrived at tick No. %d to be completed\n", transactionID, T[transactionID].current_opn->varNo, T[transactionID].current_opn->operationTimestamp) ;
                 logString(log_desc) ;
 	      }
-	      else if(T[transactionID].current_opn->operationType == WRITE_OPERATION) { 
+	      else if(T[transactionID].current_opn->operationType == WRITE_OPN) { 
 		sprintf(log_desc, "startTransactionManager: querystate- Transaction ID: %d is waiting for operation write on varNo %d with value %d arrived at tick No. %d to be completed\n", transactionID, T[transactionID].current_opn->varNo, T[transactionID].current_opn->valueToWrite, T[transactionID].current_opn->operationTimestamp) ;
                 logString(log_desc) ;
 	      }
@@ -205,9 +206,9 @@ void startTransactionManager() {
 	    }
 	  }
         }
-        else if(opn->operationType == FAIL_OPERATION || opn->operationType == RECOVER_OPERATION) {
+        else if(opn->operationType == FAIL_OPN || opn->operationType == RECOVER_OPN) {
           performOperation(opn, opn->siteNo) ;
-          if(opn->operationType == FAIL_OPERATION ) {
+          if(opn->operationType == FAIL_OPN ) {
 	   sprintf(log_desc,"startTransactionManager: site %d has been failed\n", opn->siteNo ) ;
 	   //logString(log_desc) ;
            siteInfo[opn->siteNo].flag_siteAvailable = 0 ;
@@ -240,11 +241,12 @@ void startTransactionManager() {
 	}
         if(T[trnid].current_opn->operationTimestamp <= tickNo) {		//Only consider the operation if it has already arrived or if its a previously committed operation
           struct operation *opn = T[trnid].current_opn ;
-          if(opn->operationType == READ_OPERATION ) {
+          if(opn->operationType == READ_OPN ) {
             if(opn->varNo % 2 == 1) {	//If operation is to be performed on an unreplicated variable
               int siteNo = (opn->varNo % 10) + 1 ;
               opn->siteNo = siteNo ;
-              if(opn->operationStatusAtSites[siteNo] == OPERATION_PENDING ) {	//Which means the operation has not been sent to the site yet
+              if(opn->operationStatusAtSites[siteNo] == OPN_PENDING )
+	      {	//Which means the operation has not been sent to the site yet
                 if(siteInfo[siteNo].flag_siteAvailable == 0 ) {		//If the site @ which operation was sent is now unavailable, and if there is no other site @ which operation can be performed, transaction is aborted
 #ifdef ABORT_SITE_FAIL
                   sprintf(log_desc,"startTransactionManager: Transaction ID: %d ABORTED since read on var %d failed due to site %d failure\n", trnid, opn->varNo, opn->siteNo) ;
@@ -255,7 +257,7 @@ void startTransactionManager() {
                   if(opn->operationWaitListed_tickNo == -1 ) {
                     opn->operationWaitListed_tickNo = tickNo ;
                   }
-                  opn->operationStatusAtSites[siteNo] = OPERATION_PENDING ;
+                  opn->operationStatusAtSites[siteNo] = OPN_PENDING ;
                   sprintf(log_desc, "startTransactionManager: Transaction ID: %d blocked at read on var %d since site %d has temporarily failed. Retrying on next tick..\n", trnid, opn->varNo, siteNo) ;
                   logString(log_desc) ;
                   continue ;
@@ -266,19 +268,19 @@ void startTransactionManager() {
                   opn->operationWaitListed_tickNo = -1 ;
                   performOperation(opn, siteNo) ;					//Send operation to be performed at the site
                   //Check if operation has been rejected/completed or blocked
-                  if(opn->operationStatusAtSites[siteNo] == OPERATION_REJECTED ) {
+                  if(opn->operationStatusAtSites[siteNo] == OPN_REJECTED ) {
                     sprintf(log_desc,"startTransactionManager: Transaction ID: %d ABORTED since read on var %d rejected by site %d\n", trnid, opn->varNo, opn->siteNo) ;
                     logString(log_desc) ;
                     abortTransaction(opn) ;
                     T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
                     T[trnid].current_opn = NULL ;
                   }
-                  else if(opn->operationStatusAtSites[siteNo] == OPERATION_BLOCKED) {
+                  else if(opn->operationStatusAtSites[siteNo] == OPN_BLOCKED) {
                     sprintf(log_desc, "startTransactionManager: Transaction ID: %d blocked for read on var %d @ site %d since the site could not provide the lock\n", trnid, opn->varNo, opn->siteNo) ;
                     logString(log_desc) ;
                     //Do nothing
                   }
-                  else if(opn->operationStatusAtSites[siteNo] == OPERATION_COMPLETE) {
+                  else if(opn->operationStatusAtSites[siteNo] == OPN_COMPLETE) {
                     //Operation has been completed
                     if(T[trnid].sites_accessed[siteNo].tick_firstAccessed == -1) {        //If this is the first time transaction transaction has accessed the site
                       T[trnid].sites_accessed[siteNo].tick_firstAccessed = tickNo ;
@@ -289,7 +291,7 @@ void startTransactionManager() {
                   }
                 }
               }
-              else if(opn->operationStatusAtSites[siteNo] == OPERATION_BLOCKED) {	//If operation was previously blocked by the site
+              else if(opn->operationStatusAtSites[siteNo] == OPN_BLOCKED) {	//If operation was previously blocked by the site
                 if(siteInfo[siteNo].flag_siteAvailable == 0 ) {
 #ifdef ABORT_SITE_FAIL
                   printf("startTransactionManager: Transaction ID: %d ABORTED since read on var %d at site %d timed out\n", trnid, opn->varNo, opn->siteNo ) ;
@@ -303,11 +305,11 @@ void startTransactionManager() {
 		  }
 		  sprintf(log_desc,"startTransactionManager: Transaction ID: %d has blocked at read on var %d at since site %d has temporarily failed\n", trnid, opn->varNo, opn->siteNo ) ;
                   logString(log_desc) ;
-		  opn->operationStatusAtSites[siteNo] = OPERATION_PENDING ;
+		  opn->operationStatusAtSites[siteNo] = OPN_PENDING ;
 		} 
 #endif
               }
-              else if(opn->operationStatusAtSites[siteNo] == OPERATION_COMPLETE) {
+              else if(opn->operationStatusAtSites[siteNo] == OPN_COMPLETE) {
                 if(T[trnid].sites_accessed[siteNo].tick_firstAccessed == -1) {        //If this is the first time transaction transaction has accessed the site
                   T[trnid].sites_accessed[siteNo].tick_firstAccessed = tickNo ;
                 }
@@ -322,10 +324,10 @@ void startTransactionManager() {
                 opn->siteNo = 1 ;	//Begin to try reading starting from the 1st site
               }
               if(siteInfo[opn->siteNo].flag_siteAvailable == 0) {	//If the site has failed
-                while(siteInfo[opn->siteNo].flag_siteAvailable == 0 && opn->siteNo < MAX_SITES) {
+                while(siteInfo[opn->siteNo].flag_siteAvailable == 0 && opn->siteNo < MAXIMUM_SITES) {
                   opn->siteNo++ ;
                 }
-                if(opn->siteNo == MAX_SITES) {	//We have tried all the sites and we could not get the read done
+                if(opn->siteNo == MAXIMUM_SITES) {	//We have tried all the sites and we could not get the read done
 #ifdef ABORT_SITE_FAIL
                   printf("startTransactionManager: Transaction ID: %d ABORTED since read on var %d could not be completed at any of the sites\n", trnid, opn->varNo) ;
                   abortTransaction(opn) ;
@@ -338,8 +340,8 @@ void startTransactionManager() {
                     opn->operationWaitListed_tickNo = tickNo ;
                   }
                   int i = 1 ;
-                  for(i = 1; i < MAX_SITES; i++) {		//We will retry this operation again at all sites
-                    opn->operationStatusAtSites[i] = OPERATION_PENDING ;
+                  for(i = 1; i < MAXIMUM_SITES; i++) {		//We will retry this operation again at all sites
+                    opn->operationStatusAtSites[i] = OPN_PENDING ;
                   }
                   opn->siteNo = 1 ;
                   sprintf(log_desc,"startTransactionManager: Transaction ID: %d blocked at read on var %d since all sites have failed. Retrying on the sites at the next tick..\n", trnid, opn->varNo) ;
@@ -348,15 +350,15 @@ void startTransactionManager() {
 #endif
                 }
               }
-              if(opn->operationStatusAtSites[opn->siteNo] == OPERATION_PENDING) {
+              if(opn->operationStatusAtSites[opn->siteNo] == OPN_PENDING) {
                 opn->operationWaitListed_tickNo = -1 ;
                 performOperation(opn, opn->siteNo) ;                                       //Send operation to be performed at the site
                 //Check if operation has been rejected/completed or blocked
-                if(opn->operationStatusAtSites[opn->siteNo] == OPERATION_REJECTED ) {
+                if(opn->operationStatusAtSites[opn->siteNo] == OPN_REJECTED ) {
                   //sprintf(log_desc, "startTransactionManager: Transaction ID: %d read on varNo %d rejected @ site %d. Retrying next available site\n", trnid, opn->varNo, opn->siteNo) ;
                   //logString(log_desc) ;
                   opn->siteNo++ ;
-                  if(opn->siteNo == MAX_SITES) {        //We have tried all the sites and we could not get the read done
+                  if(opn->siteNo == MAXIMUM_SITES) {        //We have tried all the sites and we could not get the read done
                     abortTransaction(opn) ;
                     T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
                     sprintf(log_desc, "startTransactionManager: Transaction ID: %d ABORTED since read on varNo %d since the operation could not be completed at any site\n", trnid, opn->varNo) ;
@@ -368,12 +370,12 @@ void startTransactionManager() {
                     goto RETRY_READ ;
                   }
                 }
-                else if(opn->operationStatusAtSites[opn->siteNo] == OPERATION_BLOCKED) {
+                else if(opn->operationStatusAtSites[opn->siteNo] == OPN_BLOCKED) {
                   //Do nothing
                   sprintf(log_desc, "startTransactionManager: Transaction ID: %d blocked for read on var %d @ site %d since site could not provide the lock\n", trnid, opn->varNo, opn->siteNo) ;
                   logString(log_desc) ;
                 }
-                else if(opn->operationStatusAtSites[opn->siteNo] == OPERATION_COMPLETE) {
+                else if(opn->operationStatusAtSites[opn->siteNo] == OPN_COMPLETE) {
                   //Operation has been completed
                   T[trnid].current_opn = T[trnid].current_opn->nextOperationTM ;
                   if(T[trnid].sites_accessed[opn->siteNo].tick_firstAccessed == -1) {        //If this is the first time transaction transaction has accessed the site
@@ -383,10 +385,10 @@ void startTransactionManager() {
                   logString(log_desc) ;
                 }
               }
-              else if(opn->operationStatusAtSites[opn->siteNo] == OPERATION_BLOCKED) {       //If operation was previously blocked by the site
+              else if(opn->operationStatusAtSites[opn->siteNo] == OPN_BLOCKED) {       //If operation was previously blocked by the site
                 if(siteInfo[opn->siteNo].flag_siteAvailable == 0 ) {  //If operation has timed out
                   opn->siteNo++ ;
-                  if(opn->siteNo == MAX_SITES) {	//We have tried all the sites and we could not get the read done
+                  if(opn->siteNo == MAXIMUM_SITES) {	//We have tried all the sites and we could not get the read done
 #ifdef ABORT_SITE_FAIL
                     printf("startTransactionManager: Transaction ID: %d ABORTED since read on var %d could not be completed at any of the sites\n", trnid, opn->varNo) ;
                     abortTransaction(opn) ;
@@ -399,8 +401,8 @@ void startTransactionManager() {
                       opn->operationWaitListed_tickNo = tickNo ;
                     }
                     int i = 1 ;
-                    for(i = 1; i < MAX_SITES; i++) {		//We will retry this operation again at all sites
-                      opn->operationStatusAtSites[i] = OPERATION_PENDING ;
+                    for(i = 1; i < MAXIMUM_SITES; i++) {		//We will retry this operation again at all sites
+                      opn->operationStatusAtSites[i] = OPN_PENDING ;
                     }
                     opn->siteNo = 1 ;
                     sprintf(log_desc,"startTransactionManager: Transaction ID: %d blocked at read on var %d since all sites have failed. Retrying on the sites at the next tick..\n", trnid, opn->varNo) ;
@@ -420,7 +422,7 @@ void startTransactionManager() {
                 }
 
               }
-              else if(opn->operationStatusAtSites[opn->siteNo] == OPERATION_COMPLETE) {
+              else if(opn->operationStatusAtSites[opn->siteNo] == OPN_COMPLETE) {
                 if(T[trnid].sites_accessed[opn->siteNo].tick_firstAccessed == -1) {        //If this is the first time transaction transaction has accessed the site
                   T[trnid].sites_accessed[opn->siteNo].tick_firstAccessed = tickNo ;
                 }
@@ -431,11 +433,11 @@ void startTransactionManager() {
             }
           }
 
-          else if(opn->operationType == WRITE_OPERATION ) {
+          else if(opn->operationType == WRITE_OPN ) {
             if(opn->varNo % 2 == 1) {	//If operation is to be performed on an unreplicated variable
               int siteNo = (opn->varNo % 10) + 1 ;
               opn->siteNo = siteNo ;
-              if(opn->operationStatusAtSites[siteNo] == OPERATION_PENDING ) {	//Which means the operation has not been sent to the site yet
+              if(opn->operationStatusAtSites[siteNo] == OPN_PENDING ) {	//Which means the operation has not been sent to the site yet
                 if(siteInfo[siteNo].flag_siteAvailable == 0 ) {		//If the site @ which operation was sent is now unavailable, and if there is no other site at which operation can be performed, transaction is aborted
 
 #ifdef ABORT_SITE_FAIL
@@ -446,7 +448,7 @@ void startTransactionManager() {
                   if(opn->operationWaitListed_tickNo == -1 ) {
                     opn->operationWaitListed_tickNo = tickNo ;
                   }
-                  opn->operationStatusAtSites[siteNo] = OPERATION_PENDING ;
+                  opn->operationStatusAtSites[siteNo] = OPN_PENDING ;
                   sprintf(log_desc, "startTransactionManager: Transaction ID: %d blocked at write on var %d with value %d since site %d has temporarily failed\n", trnid, opn->varNo, opn->valueToWrite, opn->siteNo) ;
                   logString(log_desc) ;
 #endif
@@ -456,19 +458,19 @@ void startTransactionManager() {
                   opn->operationWaitListed_tickNo = -1 ;
                   performOperation(opn, siteNo) ;					//Send operation to be performed at the site
                   //Check if operation has been rejected/completed or blocked
-                  if(opn->operationStatusAtSites[siteNo] == OPERATION_REJECTED ) {
+                  if(opn->operationStatusAtSites[siteNo] == OPN_REJECTED ) {
                     sprintf(log_desc, "startTransactionManager: Transaction %d ABORTED since write on varNo %d with value %d rejected by site %d\n", trnid, opn->varNo, opn->valueToWrite, siteNo) ;
                     logString(log_desc) ;
                     abortTransaction(opn) ;
                     T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
                     T[trnid].current_opn = NULL ;
                   }
-                  else if(opn->operationStatusAtSites[siteNo] == OPERATION_BLOCKED) {
+                  else if(opn->operationStatusAtSites[siteNo] == OPN_BLOCKED) {
                     sprintf(log_desc,"startTransactionManager: Transaction ID: %d blocked for write on varNo %d with value %d @ site %d since site could not provide it with the lock\n", trnid, opn->varNo, opn->valueToWrite, opn->siteNo) ;
                     logString(log_desc) ;
                     //Do nothing
                   }
-                  else if(opn->operationStatusAtSites[siteNo] == OPERATION_COMPLETE) {
+                  else if(opn->operationStatusAtSites[siteNo] == OPN_COMPLETE) {
                     //Operation has been completed
                    sprintf(log_desc, "startTransactionManager: Transaction ID: %d write on var %d with value %d completed\n", trnid, opn->varNo, opn->valueToWrite, opn->siteNo) ;
                    logString(log_desc) ;
@@ -482,7 +484,7 @@ void startTransactionManager() {
                   }
                 }
               }
-              else if(opn->operationStatusAtSites[siteNo] == OPERATION_BLOCKED) {	//If operation was previously blocked by the site
+              else if(opn->operationStatusAtSites[siteNo] == OPN_BLOCKED) {	//If operation was previously blocked by the site
                 if(siteInfo[siteNo].flag_siteAvailable == 0 ) {
 #ifdef ABORT_SITE_FAIL
                   printf("startTransactionManager: Transaction %d ABORTED since write on varNo %d with value to be written %d at site %d timedout\n", trnid, opn->varNo, opn->valueToWrite, opn->siteNo ) ;
@@ -496,7 +498,7 @@ void startTransactionManager() {
 		  }
 		  sprintf(log_desc, "startTransactionManager: Transaction ID: %d blocked at write on var %d with value %d since site %d has temporarily failed\n", trnid, opn->varNo, opn->valueToWrite, opn->siteNo ) ;
                   logString(log_desc) ;
-		  opn->operationStatusAtSites[siteNo] = OPERATION_PENDING ;
+		  opn->operationStatusAtSites[siteNo] = OPN_PENDING ;
 #endif
                 }
                 else {
@@ -505,7 +507,7 @@ void startTransactionManager() {
                     printf("%s", log_desc) ;
                 }
               }
-              else if(opn->operationStatusAtSites[siteNo] == OPERATION_COMPLETE) {
+              else if(opn->operationStatusAtSites[siteNo] == OPN_COMPLETE) {
                 sprintf(log_desc, "startTransactionManager: Transaction ID: %d write on var %d with value %d completed\n", trnid, opn->varNo, opn->valueToWrite, opn->siteNo) ;
                 logString(log_desc) ;
                 T[trnid].current_opn = T[trnid].current_opn->nextOperationTM ;
@@ -514,26 +516,26 @@ void startTransactionManager() {
             else {
               int siteNo, flag_writeStatus = WRITE_CHECK_FOR_COMPLETE ;
               int flag_writePerformed = 0 ;
-              for(siteNo = 1; siteNo < MAX_SITES ; siteNo++ ) {
-                if(opn->operationStatusAtSites[siteNo] == OPERATION_IGNORE || opn->operationStatusAtSites[siteNo] == OPERATION_COMPLETE) {	//We choose to ignore this site since it has/had failed during write
+              for(siteNo = 1; siteNo < MAXIMUM_SITES ; siteNo++ ) {
+                if(opn->operationStatusAtSites[siteNo] == OPN_IGNORE || opn->operationStatusAtSites[siteNo] == OPN_COMPLETE) {	//We choose to ignore this site since it has/had failed during write
                   continue ;
                 }
-                else if(opn->operationStatusAtSites[siteNo] == OPERATION_PENDING) {
+                else if(opn->operationStatusAtSites[siteNo] == OPN_PENDING) {
                   if(siteInfo[siteNo].flag_siteAvailable == 0) {
-                    opn->operationStatusAtSites[siteNo] = OPERATION_IGNORE ;	//We will be igoring this site since it was not available at the time of writing
+                    opn->operationStatusAtSites[siteNo] = OPN_IGNORE ;	//We will be igoring this site since it was not available at the time of writing
                     continue ;
                   }
                   else {	//site is available, perform the operation on that site
                     opn->operationWaitListed_tickNo = -1 ;
                     performOperation(opn, siteNo) ;                                       //Send operation to be performed at the site
                     //Check if operation has been rejected/completed or blocked
-                    if(opn->operationStatusAtSites[siteNo] == OPERATION_REJECTED ) {
+                    if(opn->operationStatusAtSites[siteNo] == OPN_REJECTED ) {
                       sprintf(log_desc, "startTransactionManager: Transaction ID: %d write on varNo %d with value %d rejected by site %d\n", trnid, opn->varNo, opn->valueToWrite, siteNo) ;
                       logString(log_desc) ;
                       flag_writeStatus = WRITE_FAILED ;
                       break ;
                     }
-                    else if(opn->operationStatusAtSites[siteNo] == OPERATION_BLOCKED) {
+                    else if(opn->operationStatusAtSites[siteNo] == OPN_BLOCKED) {
                       //Do nothing
                       sprintf(log_desc, "startTransactionManager: Transaction ID: %d blocked for write on var %d with value %d @ site %d since site could not provide it with the lock\n", trnid, opn->varNo, opn->valueToWrite, siteNo) ;
                       logString(log_desc) ;
@@ -542,7 +544,7 @@ void startTransactionManager() {
                         flag_writeStatus = WRITE_PENDING ;		//Set a flag indicating write is pending at one of the sites
                       }
                     }
-                    else if(opn->operationStatusAtSites[siteNo] == OPERATION_COMPLETE) {
+                    else if(opn->operationStatusAtSites[siteNo] == OPN_COMPLETE) {
                       //Operation has been completed at one of the sites
                       if(flag_writePerformed == 0){
                         flag_writePerformed = 1 ;	//Indicate we have successfully written at atleast one of the sites
@@ -558,9 +560,9 @@ void startTransactionManager() {
                     }
                   }
                 }
-                else if(opn->operationStatusAtSites[siteNo] == OPERATION_BLOCKED) {
+                else if(opn->operationStatusAtSites[siteNo] == OPN_BLOCKED) {
                   if(siteInfo[siteNo].flag_siteAvailable == 0 ) {  //If site on which write was sent has now failed
-                    opn->operationStatusAtSites[siteNo] = OPERATION_IGNORE ;
+                    opn->operationStatusAtSites[siteNo] = OPN_IGNORE ;
                   }
                   else {
                     sprintf(log_desc, "startTransactionManager: Transaction ID: %d still waiting for write on var %d with value %d @ site %d\n", trnid, opn->varNo, opn->valueToWrite, siteNo) ;
@@ -571,7 +573,7 @@ void startTransactionManager() {
                     }
                   }
                 }
-                else if(opn->operationStatusAtSites[siteNo] == OPERATION_COMPLETE) {
+                else if(opn->operationStatusAtSites[siteNo] == OPN_COMPLETE) {
 		  if(T[trnid].sites_accessed[siteNo].tick_firstAccessed == -1) {        //If this is the first time transaction transaction has accessed the site
 		    T[trnid].sites_accessed[siteNo].tick_firstAccessed = tickNo ;
 		  }
@@ -604,8 +606,8 @@ void startTransactionManager() {
                     opn->operationWaitListed_tickNo = tickNo ;
                   }
                   int i = 1 ;
-                  for(i = 1; i < MAX_SITES; i++) {		//We will retry this operation again at all sites
-                    opn->operationStatusAtSites[i] = OPERATION_PENDING ;
+                  for(i = 1; i < MAXIMUM_SITES; i++) {		//We will retry this operation again at all sites
+                    opn->operationStatusAtSites[i] = OPN_PENDING ;
                   }
                   sprintf(log_desc ,"startTransactionManager: Transaction ID: %d blocked at write on var %d with value %d since all sites have failed. Retrying on the sites at the next tick..\n", trnid, opn->varNo, opn->valueToWrite) ;
                   logString(log_desc) ;
@@ -622,9 +624,9 @@ void startTransactionManager() {
             }
           }
 
-          else if(opn->operationType == END_OPERATION ) {
+          else if(opn->operationType == END_OPN ) {
             int siteNo, flagCommit = 1 ;
-	    for(siteNo = 1; siteNo < MAX_SITES && flagCommit == 1 && T[trnid].transactionType != READONLY_TRANSACTION; siteNo++) {
+	    for(siteNo = 1; siteNo < MAXIMUM_SITES && flagCommit == 1 && T[trnid].transactionType != RONLY_TRANSACTIONS; siteNo++) {
 	      if(T[trnid].sites_accessed[siteNo].tick_firstAccessed != -1) {	//If the transaction has accessed this site
 		if(siteInfo[siteNo].flag_siteAvailable == 0 ) {
 		  flagCommit = 0 ;
@@ -647,7 +649,7 @@ void startTransactionManager() {
 	    if(flagCommit == 1) {
 	      sprintf(log_desc, "startTransactionManager: Transaction %d committed @ tick %d\n", trnid, tickNo) ; 
               logString(log_desc) ;
-	      for(siteNo = 1; siteNo < MAX_SITES; siteNo++) {
+	      for(siteNo = 1; siteNo < MAXIMUM_SITES; siteNo++) {
 		if(T[trnid].sites_accessed[siteNo].tick_firstAccessed != -1 && siteInfo[siteNo].flag_siteAvailable == 1) {
 		    performOperation(T[trnid].current_opn,siteNo); ///// CHECK HERE , when i try to print anything at site nothing gets printed for op
 		} 
@@ -683,9 +685,9 @@ void abortTransaction(struct operation *opn) {
   int siteNo ;
   int trnid = opn->trnid ;
   memcpy(&abort_opn, opn, sizeof(struct operation)) ;		// CHECK HERE
-  abort_opn.operationType = ABORT_OPERATION ;
+  abort_opn.operationType = ABORT_OPN ;
 
-  for(siteNo = 1; siteNo < MAX_SITES; siteNo++) {
+  for(siteNo = 1; siteNo < MAXIMUM_SITES; siteNo++) {
     abort_opn.siteNo = siteNo ; 
     abort_opn.nextOperationSite = NULL ; 
     if(T[trnid].sites_accessed[siteNo].tick_firstAccessed != -1 && siteInfo[siteNo].flag_siteAvailable == 1) {
@@ -706,7 +708,7 @@ int parseInput(char *inputFile) {
   int i ;
 
 
-  T[MISCELLANEOUS_TID].transactionType = MISCELLANEOUS_TRANSACTION ;
+  T[MISCELLANEOUS_TID].transactionType = OTHER_TRANSACTIONS ;
   FILE *fp = fopen(inputFile, "r") ;
   if(fp == NULL) {
     printf("parseInput: fopen failed %s. Error %s\n", inputFile, (char *)strerror(errno)) ;
@@ -762,7 +764,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
      temp++ ;
     trnid = atoi(temp) ;
 
-    int transactionType = READONLY_TRANSACTION ;
+    int transactionType = RONLY_TRANSACTIONS ;
     ret = createNewTransaction(trnid, transactionType, operationtimestamp) ;
     if(ret == -1) {
       printf("storeOperation: createNewTransaction returns error for new transaction trnid %d\n", trnid) ;
@@ -775,7 +777,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
      temp++ ;
     trnid = atoi(temp) ;
     //printf("New transaction %d\n", trnid) ;
-    int transactionType = READWRITE_TRANSACTION ;
+    int transactionType = READ_WRITE_TRANSACTIONS ;
     ret = createNewTransaction(trnid, transactionType, operationtimestamp) ;
     if(ret == -1) {
       printf("storeOperation: createNewTransaction returns error for new transaction trnid %d\n", trnid) ;
@@ -788,7 +790,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
      temp++ ;
     trnid = atoi(temp) ;
     int varNo = -1, valueToWrite = -1, siteNo = -1 ;
-    ret = prepareOperationNode(trnid, END_OPERATION, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
+    ret = prepareOperationNode(trnid, END_OPN, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
     if(ret == -1) {
       printf("storeOperation: prepareOperationNode returns error for end operation\n") ;
       return -1 ;
@@ -830,7 +832,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
      
     }
     int valueToWrite = -1 ;
-    ret = prepareOperationNode(trnid, DUMP_OPERATION, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
+    ret = prepareOperationNode(trnid, DUMP_OPN, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
     if(ret == -1) {
       printf("storeOperation: prepareOperationNode returns error for dump operation\n") ;
       return -1 ;
@@ -849,7 +851,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
      temp++ ;
     int siteNo = atoi(temp) ;
     int varNo = -1, valueToWrite = -1 ;
-    ret = prepareOperationNode(trnid, FAIL_OPERATION, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
+    ret = prepareOperationNode(trnid, FAIL_OPN, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
     if(ret == -1) {
       printf("storeOperation: prepareOperationNode returns error for fail operation\n") ;
       return -1 ;
@@ -869,7 +871,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
 
     
     int varNo = -1, valueToWrite = -1 ;
-    ret = prepareOperationNode(trnid, RECOVER_OPERATION, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
+    ret = prepareOperationNode(trnid, RECOVER_OPN, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
     if(ret == -1) {
       printf("storeOperation: prepareOperationNode returns error for recover operation\n") ;
       return -1 ;
@@ -879,7 +881,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
   else if(strncmp(operationString,"querystate", strlen("querystate")) == 0) {
     trnid = MISCELLANEOUS_TID ;
     int siteNo = ALL_SITES, varNo = ALL_VARIABLES, valueToWrite = -1 ;
-    ret = prepareOperationNode(trnid, QUERY_STATE_OPERATION, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
+    ret = prepareOperationNode(trnid, QUERY_STATE_OPN, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
     if(ret == -1) {
       printf("storeOperation: prepareOperationNode returns error for new operation\n") ;
       return -1 ;
@@ -897,7 +899,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
      temp++ ;
     int varNo = atoi(temp) ;
     int valueToWrite = -1, siteNo = -1 ;
-    ret = prepareOperationNode(trnid, READ_OPERATION, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
+    ret = prepareOperationNode(trnid, READ_OPN, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
     if(ret == -1) {
       printf("storeOperation: prepareOperationNode returns error for new operation\n") ;
       return -1 ;
@@ -923,7 +925,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
     while(!isdigit(*temp) && *temp != '-')
      temp++ ;
     int valueToWrite = atoi(temp), siteNo = -1 ;
-    ret = prepareOperationNode(trnid, WRITE_OPERATION, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
+    ret = prepareOperationNode(trnid, WRITE_OPN, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
     if(ret == -1) {
       printf("storeOperation: prepareOperationNode returns error for new operation\n") ;
       return -1 ;
@@ -972,8 +974,8 @@ int prepareOperationNode(int trnid, int operationType, int varNo, int valueToWri
   opn->siteNo = siteNo ;
   opn->operationWaitListed_tickNo = -1 ;
   int site_No ;
-  for(site_No = 1 ; site_No < MAX_SITES; site_No++) {
-    opn->operationStatusAtSites[site_No] = OPERATION_PENDING ;
+  for(site_No = 1 ; site_No < MAXIMUM_SITES; site_No++) {
+    opn->operationStatusAtSites[site_No] = OPN_PENDING ;
   }
   
   if(T[trnid].timestamp == -1 && trnid == MISCELLANEOUS_TID) {
@@ -1000,7 +1002,7 @@ void initializeTransactionManager() {
     T[trnid].inactiveTickNo = -1 ;
     T[trnid].flag_transactionValid = 0 ;
     T[trnid].first_opn = T[trnid].last_opn = T[trnid].current_opn = NULL ;
-    for(siteNo = 0; siteNo < MAX_SITES; siteNo++)  {
+    for(siteNo = 0; siteNo < MAXIMUM_SITES; siteNo++)  {
       T[trnid].sites_accessed[siteNo].tick_firstAccessed = -1 ;
       T[trnid].sites_accessed[siteNo].flagWriteAccessed = 0 ; 
     }
@@ -1008,19 +1010,19 @@ void initializeTransactionManager() {
 
   //Initialize variable-site mapping
   int varNo ;
-  for(varNo = 1; varNo < MAX_VARIABLES ; varNo++)  {
+  for(varNo = 1; varNo < MAXIMUM_VARIABLES ; varNo++)  {
     if(varNo % 2 == 1) {	//if the variable is odd, use the given data in problem statement to find the siteNo @ which it will be stored
       siteNo = (varNo % 10) + 1 ;
       siteInfo[siteNo].flag_varNo[varNo] = 1 ;
     }
     else {	//Even variables are present at all sites
-      for(siteNo = 1; siteNo < MAX_SITES ; siteNo++ ) {
+      for(siteNo = 1; siteNo < MAXIMUM_SITES ; siteNo++ ) {
         siteInfo[siteNo].flag_varNo[varNo] = 1 ;
       }
     }
   }
 
-  for(siteNo = 1; siteNo < MAX_SITES; siteNo++) {	//All sites are assumed to be up initially
+  for(siteNo = 1; siteNo < MAXIMUM_SITES; siteNo++) {	//All sites are assumed to be up initially
     siteInfo[siteNo].flag_siteAvailable = 1 ;
     siteInfo[siteNo].tick_upTime = 0 ;		//All sites are assumed to be up from the 0th tick
   }
