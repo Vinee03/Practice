@@ -20,7 +20,7 @@ struct operation *first_blocked_operation;
 
 struct version
 {
- int tid;                                           
+ int trnid;                                           
  int value;
  int R_Timestamp;
  int W_Timestamp;
