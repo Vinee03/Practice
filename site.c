@@ -531,16 +531,16 @@ if(op->transactionType == READWRITE_TRANSACTION )
 	     		
 		if(op->operationType==READ_OPERATION || op->operationType== WRITE_OPERATION)
 		{
-		if(checkLockIsNecessary(site_No,op->varNo,op->tid,op->operationType) == 1)  // If the transaction already has the stronger lock
+		if(checkLockIsNecessary(site_No,op->varNo,op->tid,op->operationType) == 1)  
 			{  UpdateVersionTable(site_No,op->varNo,op);
-			   op->operationStatusAtSites[site_No]=OPERATION_COMPLETE;  // Lock Granted;
+			   op->operationStatusAtSites[site_No]=OPERATION_COMPLETE;  
 			   return;
 			}   
 		
                	
 		int request=checkConflictAndDeadlockPrevention(site_No,op->varNo,op->tid,op->transactionTimestamp,op->operationType);
 		
-		if((request==0) || (request==2)) //Lock Granted,add it to active list
+		if((request==0) || (request==2)) 
 		  {	
 			addToActiveList(site_No,op->varNo,op,request);
 			UpdateVersionTable(site_No,op->varNo,op);
