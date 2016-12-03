@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <sys/select.h>
 
-//#define _DEBUG_
+
 #define WAIT_SITE_FAIL
 
 #define SLEEP_DURATION_MS 	200
@@ -31,8 +31,6 @@ void startTransactionManager() {
     sprintf(log_desc, "\n\n\n*******startTransactionManager: tickNo %d************\n", tickNo) ;
     logString(log_desc) ;
     flagPending = 0 ;
-    //For any tick we first will check if there is a dump/recover/fail operation to be performed for that tick
-    //if( T[MISCELLANEOUS_TID].current_opn != NULL ) {
     while( T[MISCELLANEOUS_TID].current_opn != NULL ) {
       if(flagPending == 0)
 	flagPending = 1 ;
@@ -693,11 +691,13 @@ void abortTransaction(struct operation *opn) {
   }
   return ; 
 }
-
+/****************************************************************************************************************
+						Function parseInput Starts								
+*************************************************************************************************************************/
 int parseInput(char *inputFile) {
   int ret ;
 
-  //Initialize all transactions to be invalid
+  
   int i ;
 
 
@@ -712,7 +712,7 @@ int parseInput(char *inputFile) {
     char buff[100], buff1[100], *temp ;
     memset(buff, 0, 100) ;
     fscanf(fp, "%s", buff) ;
-    if(buff[0] == '/' || buff[0] == '#') {		//Line is a comment. Read it & ignore it
+    if(buff[0] == '/' || buff[0] == '#') {		
       fgets(buff1, 100, fp) ;
       continue ;
     }
@@ -722,23 +722,13 @@ int parseInput(char *inputFile) {
         printf("parseInput: storeOperation returned error for operation %s\n", buff) ;
         return -1 ;
       }
-      temp = strstr(buff, ";") ;	//Operations separated by ; belong to the same line and hence have the same timestamp
+      temp = strstr(buff, ";") ;	
       if(temp == NULL) {
         timeStamp ++ ;
       }
     }
   }
 
-/*  for(i = 0; i < MAX_TRANSACTIONS; i++) {
-     if(T[i].first_opn != NULL) {
-       struct operation *temp = T[i].first_opn ;
-       while(temp != NULL ) {
-         printf("tid %d (timestamp %d) :operation %d operationtimestamp %d transactiontimestamp %d var %d site %d write %d\n", i, T[i].timestamp, temp->operationType, temp->operationTimestamp, temp->transactionTimestamp, temp->varNo, temp->siteNo, temp->valueToWrite) ;
-         temp = temp->nextOperationTM ;
-       }
-     }
-  }
- */ 
   return  0 ;
 }
 
@@ -750,12 +740,11 @@ int storeOperation(char *operationString, int operationtimestamp) {
     printf("storeOperation: Fatal Error. malloc for struct operation failed. Error: %s\n", strerror(errno)) ;
     return -1 ;
   }
-  if(strncmp(operationString,"beginRO", strlen("beginRO")) == 0) {	//We have got a new Read only transaction
+  if(strncmp(operationString,"beginRO", strlen("beginRO")) == 0) {	
     temp = operationString ;
     while(!isdigit(*temp))
      temp++ ;
     tid = atoi(temp) ;
-    //printf("New Readonly transaction %d\n", tid) ;
     int transactionType = READONLY_TRANSACTION ;
     ret = createNewTransaction(tid, transactionType, operationtimestamp) ;
     if(ret == -1) {
@@ -763,7 +752,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
       return -1 ;
     }
   }
-  else if(strncmp(operationString,"begin", strlen("begin")) == 0) {	//We have got a new transaction
+  else if(strncmp(operationString,"begin", strlen("begin")) == 0) {	
     temp = operationString ;
     while(!isdigit(*temp))
      temp++ ;
@@ -776,7 +765,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
       return -1 ;
     }
   }
-  else if(strncmp(operationString,"end", strlen("end")) == 0) {	//We have to commit the transaction
+  else if(strncmp(operationString,"end", strlen("end")) == 0) {	
     temp = operationString ;
     while(!isdigit(*temp))
      temp++ ;
@@ -789,7 +778,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
     }
     addOperationToTransactionQueue(tid, opn) ;
 
-    //printf("End transaction %d\n", tid) ;
+    
   }
   else if(strncmp(operationString,"dump", strlen("dump")) == 0) {
     int varNo = -1, siteNo ;
@@ -801,22 +790,20 @@ int storeOperation(char *operationString, int operationtimestamp) {
     }
     while(*temp != ')' && !isalpha(*temp) && !isdigit(*temp))
      temp++ ;
-    if(*temp == ')') {		//Dump Operation is of type dump(): i.e. dump of all sites
-     //printf("Dump all values on all sites\n") ;
+    if(*temp == ')') {		
      varNo = ALL_VARIABLES ;
      siteNo = ALL_SITES ;
     }
-    else if(isdigit(*temp)) {		//Dump operation is of type dump(1): i.e. dump of site 1
+    else if(isdigit(*temp)) {		
      siteNo = atoi(temp) ;
      varNo = ALL_VARIABLES ;
-     //printf("Dump operation for site %d\n", siteNo) ;
+     
     }
     else if(isalpha(*temp)) {
      while(!isdigit(*temp))
       temp++ ;
      varNo = atoi(temp) ;
      siteNo = ALL_SITES ;
-     //printf("Dump operation of variable %d\n", varNo) ;		//Dump operation is of type dump(x1): i.e for a particular variable
      
     }
     int valueToWrite = -1 ;
@@ -856,7 +843,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
     while(!isdigit(*temp))
      temp++ ;
     int siteNo = atoi(temp) ;
-    //printf("Recover site %d\n", siteNo) ;
+    
     int varNo = -1, valueToWrite = -1 ;
     ret = prepareOperationNode(tid, RECOVER_OPERATION, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
     if(ret == -1) {
@@ -892,9 +879,8 @@ int storeOperation(char *operationString, int operationtimestamp) {
       return -1 ;
     }
     addOperationToTransactionQueue(tid, opn) ;
-    //printf("Read operation by T%d on %d\n", tid, varNo) ;
-  }
-  else if(strncmp(operationString,"W", strlen("W")) == 0) {	//We have got a Write operation
+   }
+  else if(strncmp(operationString,"W", strlen("W")) == 0) {	
     temp = operationString ;
     while(!isdigit(*temp))
      temp++ ;
@@ -917,7 +903,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
       return -1 ;
     }
     addOperationToTransactionQueue(tid, opn) ;
-    //printf("Write operation by T%d on %d value %d\n", tid, varNo, valueToWrite) ;
+    
   }
   return  0 ;
 }
