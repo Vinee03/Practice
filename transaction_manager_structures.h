@@ -7,20 +7,29 @@
 
 #define TRANSACTION_COMMITED	1
 #define TRANSACTION_ABORTED	0
-
-struct siteAccessInfo {		//This struct gives access information for a site for a specific transaction
+/********************************************************************************************************************
+                                        struct siteAccessInfo starts
+                         The structure gives information for a particular site for a particular transaction
+************************************************************************************************************************/
+struct siteAccessInfo {		
  int tick_firstAccessed ;
  int flagWriteAccessed ;
 } ;
+/********************************************************************************************************************
+                                        struct siteInformation starts
+                         The structure gives information for a particular site for a particular transaction
+************************************************************************************************************************/
 
 struct siteInformation {
-  int flag_varNo[MAX_SITES] ;	//A flag indicating whether the variable is present at the given site or not
-  int flag_siteAvailable ;	//A flag indicating if the given site is available or down
-  int tick_upTime ;		//The value of tick since which the site is up
+  int flag_varNo[MAX_SITES] ;
+  int flag_siteAvailable ;	
+  int tick_upTime ;		
 } ;
 typedef struct siteInformation siteInformation ;
 siteInformation siteInfo[MAX_SITES] ;
-
+/**************************************************************************************************************************
+                                     struct Transaction Starts          
+*****************************************************************************************************************************/
 struct Transaction {
  struct siteAccessInfo sites_accessed[MAX_SITES];
  int timestamp ;
