@@ -6,22 +6,23 @@
 #include <unistd.h>
 
 int main(int argc, char *argv[]) {
-  char inputFile[100], log_desc[1000] ;
+  char inputFile[100];
   int ret ;
-
+  char log_desc[1000] ;
+  
   if(argc != 2) {
-    printf("Usage: %s <input-transaction-file-path>\n", argv[0]) ;
+    printf("Main Function : Check the input file path %s", argv[0]) ;
     return  0 ;
   }
   strcpy(inputFile, argv[1]) ;
   ret = checkFileExists(inputFile) ;
   if(ret == -1) {
-   printf("main: File %s does not exist or is an empty file. Exiting\n", inputFile) ;
+   printf("Main function: File %s does not exist or is empty", inputFile) ;
    return  0 ;
   }
-  FILE *fp = fopen("repcrec.log", "w") ;
+  FILE *fp = fopen("logfile.log", "w") ;
   if(fp == NULL) {
-    printf("main: failed to open log file in write mode. Error: %s\n", (char *)strerror(errno)) ;
+    printf("Main function: failed to open log file in write mode. Error: %s\n", (char *)strerror(errno)) ;
   }
   else {
     fclose(fp) ;
@@ -66,7 +67,7 @@ int checkFileExists(char *fname) {
 **********************************************************************************************************************************/
 void logString(char * log_desc) {
 
-   FILE *fp = fopen("repcrec.log", "a") ;
+   FILE *fp = fopen("logfile.log", "a") ;
    printf("%s", log_desc) ;
    if(fp == NULL) {
      printf("logString: failed to open log file in append mode. Error: %s\n", (char *)strerror(errno)) ;
