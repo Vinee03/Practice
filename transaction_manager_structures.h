@@ -38,7 +38,7 @@ struct Transaction {
  struct siteAccessInfo sites_accessed[MAXIMUM_SITES];
  int timestamp ;
  int flag_transactionValid ;
- int transactionType ;
+ int trnType ;
  int transactionCompletionStatus ;
  int inactiveTickNo ;
  struct operation *first_opn ;
