@@ -45,7 +45,7 @@ struct operation {
  int readValue ;
  int sitenumber ;					
  int waitlistedOpnTicknumber ;	        
- int operationStatusAtSites[MAXIMUM_SITES] ; 	
+ int opnSiteStatus[MAXIMUM_SITES] ; 	
  struct operation *opnSite ;
  struct operation *opnTM ;
 } ;
