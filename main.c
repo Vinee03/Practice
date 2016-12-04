@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
   }
   FILE *fp = fopen("logfile.log", "w") ;
   if(fp == NULL) {
-    printf("Main function: failed to open log file in write mode. Error: %s\n", (char *)strerror(errno)) ;
+    printf("Main function: Error in opening log file:  %s, (char *)strerror(errno)) ;
   }
   else {
     fclose(fp) ;
@@ -31,11 +31,11 @@ int main(int argc, char *argv[]) {
   initializeSiteData() ;
   ret = parseInput(inputFile) ;
   if(ret == -1) {
-   printf("main: parseInput could not parse file %s. Exiting\n", inputFile) ;
+   printf("Main function: parseInput could not parse file : %s", inputFile) ;
    return  0 ;
   }
   startTransactionManager() ;
-  sprintf(log_desc, "main: Transaction Manager exiting\n") ;
+  sprintf(log_desc, "Main function: Exit Transaction Manager\n") ;
   logString(log_desc) ;
   return  0 ;
 }
@@ -58,7 +58,7 @@ int checkFileExists(char *fname) {
   }
   return 0 ;
 }
-/**************************************************************************************************************************
+/********************************************************************************************************************************
                                              Function checkFileExists Ends 
 *********************************************************************************************************************************/
 /*********************************************************************************************************************************
