@@ -226,7 +226,7 @@ void startTransactionManager() {
            }
           }
         }
-        T[OTHER_TRNID].current_opn = T[OTHER_TRNID].current_opn->nextOperationTM ;
+        T[OTHER_TRNID].current_opn = T[OTHER_TRNID].current_opn->opnTM ;
       } 
     }
     for(trnid = 0 ; trnid < MAXIMUM_TRANSACTIONS ; trnid++) {
@@ -285,7 +285,7 @@ void startTransactionManager() {
                     if(T[trnid].sites_accessed[sitenumber].tick_firstAccessed == -1) {        //If this is the first time transaction transaction has accessed the site
                       T[trnid].sites_accessed[sitenumber].tick_firstAccessed = tickNo ;
                     }
-                    T[trnid].current_opn = T[trnid].current_opn->nextOperationTM ;
+                    T[trnid].current_opn = T[trnid].current_opn->opnTM ;
                     sprintf(log_desc, "startTransactionManager: Transaction ID: %d Read on var no. %d returns %d from site %d\n", trnid, opn->varNo, opn->readValue, opn->sitenumber) ;
                     logString(log_desc) ;
                   }
@@ -313,7 +313,7 @@ void startTransactionManager() {
                 if(T[trnid].sites_accessed[sitenumber].tick_firstAccessed == -1) {        //If this is the first time transaction transaction has accessed the site
                   T[trnid].sites_accessed[sitenumber].tick_firstAccessed = tickNo ;
                 }
-                T[trnid].current_opn = T[trnid].current_opn->nextOperationTM ;
+                T[trnid].current_opn = T[trnid].current_opn->opnTM ;
                 sprintf(log_desc, "startTransactionManager: Transaction ID: %d Read on var no. %d returns %d from site %d\n", trnid, opn->varNo, opn->readValue, opn->sitenumber) ;
                 logString(log_desc) ;
               }
@@ -377,7 +377,7 @@ void startTransactionManager() {
                 }
                 else if(opn->operationStatusAtSites[opn->sitenumber] == OPN_COMPLETE) {
                   //Operation has been completed
-                  T[trnid].current_opn = T[trnid].current_opn->nextOperationTM ;
+                  T[trnid].current_opn = T[trnid].current_opn->opnTM ;
                   if(T[trnid].sites_accessed[opn->sitenumber].tick_firstAccessed == -1) {        //If this is the first time transaction transaction has accessed the site
                     T[trnid].sites_accessed[opn->sitenumber].tick_firstAccessed = tickNo ;
                   }
@@ -428,7 +428,7 @@ void startTransactionManager() {
                 }
                 sprintf(log_desc, "startTransactionManager: Transaction ID: %d Read on var no. %d returns %d from site %d\n", trnid, opn->varNo, opn->readValue, opn->sitenumber) ;
                 logString(log_desc) ;
-                T[trnid].current_opn = T[trnid].current_opn->nextOperationTM ;
+                T[trnid].current_opn = T[trnid].current_opn->opnTM ;
               }
             }
           }
@@ -474,7 +474,7 @@ void startTransactionManager() {
                     //Operation has been completed
                    sprintf(log_desc, "startTransactionManager: Transaction ID: %d write on var %d with value %d completed\n", trnid, opn->varNo, opn->writtenValue, opn->sitenumber) ;
                    logString(log_desc) ;
-                    T[trnid].current_opn = T[trnid].current_opn->nextOperationTM ;
+                    T[trnid].current_opn = T[trnid].current_opn->opnTM ;
                     if(T[trnid].sites_accessed[sitenumber].tick_firstAccessed == -1) {        //If this is the first time transaction transaction has accessed the site
                       T[trnid].sites_accessed[sitenumber].tick_firstAccessed = tickNo ;
                     }
@@ -510,7 +510,7 @@ void startTransactionManager() {
               else if(opn->operationStatusAtSites[sitenumber] == OPN_COMPLETE) {
                 sprintf(log_desc, "startTransactionManager: Transaction ID: %d write on var %d with value %d completed\n", trnid, opn->varNo, opn->writtenValue, opn->sitenumber) ;
                 logString(log_desc) ;
-                T[trnid].current_opn = T[trnid].current_opn->nextOperationTM ;
+                T[trnid].current_opn = T[trnid].current_opn->opnTM ;
               }
             }
             else {
@@ -590,7 +590,7 @@ void startTransactionManager() {
               if(flag_writeStatus == WRITE_CHECK_FOR_COMPLETE) {	//Either write happened to all sites or all sites have failed
 		//Check if we have performed atleast one write successfully
                 if(flag_writePerformed == 1) { 
-		  T[trnid].current_opn = T[trnid].current_opn->nextOperationTM ;
+		  T[trnid].current_opn = T[trnid].current_opn->opnTM ;
                   sprintf(log_desc, "startTransactionManager: Transaction ID: %d write on varNo %d with value %d completed at all available sites\n", trnid, opn->varNo, opn->writtenValue) ;
                   logString(log_desc) ;
                 }
@@ -689,7 +689,7 @@ void abortTransaction(struct operation *opn) {
 
   for(sitenumber = 1; sitenumber < MAXIMUM_SITES; sitenumber++) {
     abort_opn.sitenumber = sitenumber ; 
-    abort_opn.nextOperationSite = NULL ; 
+    abort_opn.opnSite = NULL ; 
     if(T[trnid].sites_accessed[sitenumber].tick_firstAccessed != -1 && siteInfo[sitenumber].flag_siteAvailable == 1) {
       performOperation(&abort_opn, sitenumber) ;
     }
@@ -958,7 +958,7 @@ void addOperationToTransactionQueue(int trnid, struct operation *opn) {
     T[trnid].first_opn = T[trnid].last_opn = T[trnid].current_opn = opn ;
   }
   else {
-    T[trnid].last_opn->nextOperationTM = opn ;
+    T[trnid].last_opn->opnTM = opn ;
     T[trnid].last_opn = opn ;
   }
   return  ;
@@ -968,7 +968,7 @@ int prepareOperationNode(int trnid, int operationType, int varNo, int writtenVal
   opn->trnid = trnid ;
   opn->operationType = operationType ;
   opn->operationTimestamp = operationtimestamp ;
-  opn->nextOperationTM = NULL ;
+  opn->opnTM = NULL ;
   opn->varNo = varNo ;
   opn->writtenValue = writtenValue ;
   opn->sitenumber = sitenumber ;
