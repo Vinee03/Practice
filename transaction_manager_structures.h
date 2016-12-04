@@ -1,11 +1,11 @@
-#define MAX_TRANSACTIONS	10000
-#define MISCELLANEOUS_TID       9999             
-#define MAX_WAITING_TICKS	20		
+#define MAXIMUM_TRANSACTIONS	10000
+#define OTHER_TRNID       9999             
+#define MAXIMUM_WAITING_TICKS	20		
 #include "globalvar.h"
 #include <time.h>
 
-#define TRANSACTION_COMMITED	1
-#define TRANSACTION_ABORTED	0
+#define TRN_COMMITED	1
+#define TRN_ABORTED	0
 
 /********************************************************************************************************************
                                         struct siteAccessInfo starts
@@ -46,6 +46,6 @@ struct Transaction {
  struct operation *current_opn ;
 } ;
 
-struct Transaction T[MAX_TRANSACTIONS] ;
+struct Transaction T[MAXIMUM_TRANSACTIONS] ;
 void initializeTransactionManager() ;
 void startTransactionManager() ;
