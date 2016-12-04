@@ -46,8 +46,8 @@ struct operation {
  int sitenumber ;					
  int waitlistedOpnTicknumber ;	        
  int operationStatusAtSites[MAXIMUM_SITES] ; 	
- struct operation *nextOperationSite ;
- struct operation *nextOperationTM ;
+ struct operation *opnSite ;
+ struct operation *opnTM ;
 } ;
 
 void logString(char *) ;
