@@ -1,7 +1,7 @@
 #include "globalvar.h"
 #define MAXIMUM_TRN_TIMESTAMP 10000
 void initializeSiteData() ;
-void performOperation(struct operation *opn, int siteNo) ;
+void performOperation(struct operation *opn, int sitenumber) ;
 /**********************************************************************************************************
                                          struct lockTable Starts
                       It consists of two operation first active operation and first blocked operation.
