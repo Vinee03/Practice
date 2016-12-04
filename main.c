@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
   }
   FILE *fp = fopen("logfile.log", "w") ;
   if(fp == NULL) {
-    printf("Main function: Error in opening log file:  %s, (char *)strerror(errno)) ;
+    printf("Main function: Error in opening log file:  %s", (char *)strerror(errno)) ;
   }
   else {
     fclose(fp) ;
