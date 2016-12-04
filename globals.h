@@ -36,15 +36,15 @@
 ****************************************************************************************************************************/
 struct operation {
  int trnid ;				
- int operationType ;			
- int operationTimestamp ;
- int transactionType ;			
- int transactionTimestamp ;
- int varNo ;
- int valueToWrite ;
- int valueRead ;
- int siteNo ;					
- int operationWaitListed_tickNo ;	        
+ int opnType ;			
+ int opnTimestamp ;
+ int trnType ;			
+ int trnTimestamp ;
+ int variablenumber ;
+ int writtenValue ;
+ int readValue ;
+ int sitenumber ;					
+ int waitlistedOpnTicknumber ;	        
  int operationStatusAtSites[MAXIMUM_SITES] ; 	
  struct operation *nextOperationSite ;
  struct operation *nextOperationTM ;
