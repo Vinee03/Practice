@@ -10,9 +10,9 @@ void performOperation(struct operation *opn, int sitenumber) ;
 struct lockTable
 {
 int flag;                                                             
-int readAvailable;
-struct operation *first_active_operation;
-struct operation *first_blocked_operation;
+int availableRead;
+struct operation *ft_act_opn;
+struct operation *ft_blkd_opn;
 };
 /**********************************************************************************************************
                                          struct version Starts
@@ -22,8 +22,8 @@ struct version
 {
  int trnid;                                           
  int value;
- int R_Timestamp;
- int W_Timestamp;
+ int Read_Timestamp;
+ int Write_Timestamp;
  struct version *next;
 };
 /**********************************************************************************************************
