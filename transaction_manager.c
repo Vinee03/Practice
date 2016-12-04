@@ -34,14 +34,14 @@ void startTransactionManager() {
     flagPending = 0 ;
 
 
-    while( T[MISCELLANEOUS_TID].current_opn != NULL ) {
+    while( T[OTHER_TRNID].current_opn != NULL ) {
       if(flagPending == 0)
 	flagPending = 1 ;
-      if(T[MISCELLANEOUS_TID].current_opn->operationTimestamp > tickNo) {
+      if(T[OTHER_TRNID].current_opn->operationTimestamp > tickNo) {
         break ;
       }
-      if(T[MISCELLANEOUS_TID].timestamp <= tickNo && T[MISCELLANEOUS_TID].current_opn->operationTimestamp <= tickNo) {
-        struct operation *opn = T[MISCELLANEOUS_TID].current_opn ;
+      if(T[OTHER_TRNID].timestamp <= tickNo && T[OTHER_TRNID].current_opn->operationTimestamp <= tickNo) {
+        struct operation *opn = T[OTHER_TRNID].current_opn ;
         if(opn->operationType == DUMP_OPN)
 	{	//Dump could be on a single site or on all sites containing a specific variable or on all sites for all variables
           if(opn->varNo == ALL_VARIABLES) {
@@ -175,12 +175,12 @@ void startTransactionManager() {
 	    }
           }
 	  int transactionID ;
-	  for(transactionID = 0; transactionID < MAX_TRANSACTIONS ; transactionID++ ) {
-	    if(transactionID == MISCELLANEOUS_TID || T[transactionID].timestamp > tickNo || T[transactionID].timestamp == -1) {
+	  for(transactionID = 0; transactionID < MAXIMUM_TRANSACTIONS ; transactionID++ ) {
+	    if(transactionID == OTHER_TRNID || T[transactionID].timestamp > tickNo || T[transactionID].timestamp == -1) {
 	      continue ;
 	    }
 	    if(T[transactionID].current_opn == NULL) {	//The transaction has completed
-	      if(T[transactionID].transactionCompletionStatus == TRANSACTION_COMMITED) {
+	      if(T[transactionID].transactionCompletionStatus == TRN_COMMITED) {
 		sprintf(log_desc, "startTransactionManager: querystate- Transaction ID: %d COMMITED\n", transactionID) ;
                 logString(log_desc) ;
 	      }
@@ -226,11 +226,11 @@ void startTransactionManager() {
            }
           }
         }
-        T[MISCELLANEOUS_TID].current_opn = T[MISCELLANEOUS_TID].current_opn->nextOperationTM ;
+        T[OTHER_TRNID].current_opn = T[OTHER_TRNID].current_opn->nextOperationTM ;
       } 
     }
-    for(trnid = 0 ; trnid < MAX_TRANSACTIONS ; trnid++) {
-      if(trnid  == MISCELLANEOUS_TID)
+    for(trnid = 0 ; trnid < MAXIMUM_TRANSACTIONS ; trnid++) {
+      if(trnid  == OTHER_TRNID)
         continue ;
       if(T[trnid].current_opn != NULL ) {
 	if(flagPending == 0) {
@@ -272,7 +272,7 @@ void startTransactionManager() {
                     sprintf(log_desc,"startTransactionManager: Transaction ID: %d ABORTED since read on var %d rejected by site %d\n", trnid, opn->varNo, opn->siteNo) ;
                     logString(log_desc) ;
                     abortTransaction(opn) ;
-                    T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
+                    T[trnid].transactionCompletionStatus = TRN_ABORTED ;
                     T[trnid].current_opn = NULL ;
                   }
                   else if(opn->operationStatusAtSites[siteNo] == OPN_BLOCKED) {
@@ -296,7 +296,7 @@ void startTransactionManager() {
 #ifdef ABORT_SITE_FAIL
                   printf("startTransactionManager: Transaction ID: %d ABORTED since read on var %d at site %d timed out\n", trnid, opn->varNo, opn->siteNo ) ;
                   abortTransaction(opn) ;
-                  T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
+                  T[trnid].transactionCompletionStatus = TRN_ABORTED ;
                   T[trnid].current_opn = NULL ;
 #endif
 #ifdef WAIT_SITE_FAIL
@@ -331,7 +331,7 @@ void startTransactionManager() {
 #ifdef ABORT_SITE_FAIL
                   printf("startTransactionManager: Transaction ID: %d ABORTED since read on var %d could not be completed at any of the sites\n", trnid, opn->varNo) ;
                   abortTransaction(opn) ;
-                  T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
+                  T[trnid].transactionCompletionStatus = TRN_ABORTED ;
                   T[trnid].current_opn = NULL ;
                   continue ;
 #endif
@@ -360,7 +360,7 @@ void startTransactionManager() {
                   opn->siteNo++ ;
                   if(opn->siteNo == MAXIMUM_SITES) {        //We have tried all the sites and we could not get the read done
                     abortTransaction(opn) ;
-                    T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
+                    T[trnid].transactionCompletionStatus = TRN_ABORTED ;
                     sprintf(log_desc, "startTransactionManager: Transaction ID: %d ABORTED since read on varNo %d since the operation could not be completed at any site\n", trnid, opn->varNo) ;
 		    logString(log_desc);	
                     T[trnid].current_opn = NULL ;
@@ -392,7 +392,7 @@ void startTransactionManager() {
 #ifdef ABORT_SITE_FAIL
                     printf("startTransactionManager: Transaction ID: %d ABORTED since read on var %d could not be completed at any of the sites\n", trnid, opn->varNo) ;
                     abortTransaction(opn) ;
-                    T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
+                    T[trnid].transactionCompletionStatus = TRN_ABORTED ;
                     T[trnid].current_opn = NULL ;
                     continue ;
 #endif
@@ -462,7 +462,7 @@ void startTransactionManager() {
                     sprintf(log_desc, "startTransactionManager: Transaction %d ABORTED since write on varNo %d with value %d rejected by site %d\n", trnid, opn->varNo, opn->valueToWrite, siteNo) ;
                     logString(log_desc) ;
                     abortTransaction(opn) ;
-                    T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
+                    T[trnid].transactionCompletionStatus = TRN_ABORTED ;
                     T[trnid].current_opn = NULL ;
                   }
                   else if(opn->operationStatusAtSites[siteNo] == OPN_BLOCKED) {
@@ -489,7 +489,7 @@ void startTransactionManager() {
 #ifdef ABORT_SITE_FAIL
                   printf("startTransactionManager: Transaction %d ABORTED since write on varNo %d with value to be written %d at site %d timedout\n", trnid, opn->varNo, opn->valueToWrite, opn->siteNo ) ;
                   abortTransaction(opn) ;
-                  T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
+                  T[trnid].transactionCompletionStatus = TRN_ABORTED ;
                   T[trnid].current_opn = NULL ;
 #endif
 #ifdef WAIT_SITE_FAIL
@@ -598,7 +598,7 @@ void startTransactionManager() {
 #ifdef ABORT_SITE_FAIL
                   printf("startTransactionManager: Transaction ID: %d ABORTED since write on var %d with value %d could not be completed at any of the sites\n", trnid, opn->varNoopn->valueToWrite) ;
                   abortTransaction(opn) ;
-                  T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
+                  T[trnid].transactionCompletionStatus = TRN_ABORTED ;
                   T[trnid].current_opn = NULL ;
 #endif
 #ifdef WAIT_SITE_FAIL
@@ -618,7 +618,7 @@ void startTransactionManager() {
                 sprintf(log_desc, "startTransactionManager: Transaction ID: %d ABORTED since write on varNo %d with value to be written %d rejected by site %d\n", trnid, opn->varNo, opn->valueToWrite, siteNo) ;
                 logString(log_desc) ;
                 abortTransaction(opn) ;
-                T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
+                T[trnid].transactionCompletionStatus = TRN_ABORTED ;
                 T[trnid].current_opn = NULL ;
               }
             }
@@ -633,7 +633,7 @@ void startTransactionManager() {
 		  sprintf(log_desc, "startTransactionManager: Transaction %d could not commit and has been ABORTED since site %d has failed\n", trnid, siteNo) ;
                   logString(log_desc) ;
 		  abortTransaction(opn) ;
-		  T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
+		  T[trnid].transactionCompletionStatus = TRN_ABORTED ;
 		  T[trnid].current_opn = NULL ;
 		}
 		else if(siteInfo[siteNo].tick_upTime > T[trnid].sites_accessed[siteNo].tick_firstAccessed) {	//The site had failed after transaction accessed it for first time
@@ -641,7 +641,7 @@ void startTransactionManager() {
                   sprintf(log_desc, "startTransactionManager: Transaction %d ABORTED since site %d had failed at some point after the transaction first accessed it\n", trnid, siteNo) ;
                   logString(log_desc) ;
                   abortTransaction(opn) ; 
-		  T[trnid].transactionCompletionStatus = TRANSACTION_ABORTED ;
+		  T[trnid].transactionCompletionStatus = TRN_ABORTED ;
                   T[trnid].current_opn = NULL ;
 		} 
 	      }
@@ -655,7 +655,7 @@ void startTransactionManager() {
 		} 
 	      }
 	      T[trnid].current_opn = NULL ; 
-              T[trnid].transactionCompletionStatus = TRANSACTION_COMMITED ;
+              T[trnid].transactionCompletionStatus = TRN_COMMITED ;
 	    }
           }
         }
@@ -708,7 +708,7 @@ int parseInput(char *inputFile) {
   int i ;
 
 
-  T[MISCELLANEOUS_TID].transactionType = OTHER_TRANSACTIONS ;
+  T[OTHER_TRNID].transactionType = OTHER_TRANSACTIONS ;
   FILE *fp = fopen(inputFile, "r") ;
   if(fp == NULL) {
     printf("parseInput: fopen failed %s. Error %s\n", inputFile, (char *)strerror(errno)) ;
@@ -802,7 +802,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
   }
   else if(strncmp(operationString,"dump", strlen("dump")) == 0) {
     int varNo = -1, siteNo ;
-    trnid = MISCELLANEOUS_TID ;
+    trnid = OTHER_TRNID ;
     temp = strstr(operationString, "(") ;
     if(temp == NULL) {
      printf("storeOperation: Could not parse dump operation %s\n", operationString) ;
@@ -841,7 +841,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
     addOperationToTransactionQueue(trnid, opn) ;
   }
   else if(strncmp(operationString,"fail", strlen("fail")) == 0) {
-    trnid = MISCELLANEOUS_TID ;
+    trnid = OTHER_TRNID ;
     temp = strstr(operationString, "(") ;
     if(temp == NULL) {
      printf("storeOperation: Could not parse fail operation %s\n", operationString) ;
@@ -859,7 +859,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
     addOperationToTransactionQueue(trnid, opn) ;
   }
   else if(strncmp(operationString,"recover", strlen("recover")) == 0) {
-    trnid = MISCELLANEOUS_TID ;
+    trnid = OTHER_TRNID ;
     temp = strstr(operationString, "(") ;
     if(temp == NULL) {
      printf("storeOperation: Could not parse recover operation %s\n", operationString) ;
@@ -879,7 +879,7 @@ int storeOperation(char *operationString, int operationtimestamp) {
     addOperationToTransactionQueue(trnid, opn) ;
   }
   else if(strncmp(operationString,"querystate", strlen("querystate")) == 0) {
-    trnid = MISCELLANEOUS_TID ;
+    trnid = OTHER_TRNID ;
     int siteNo = ALL_SITES, varNo = ALL_VARIABLES, valueToWrite = -1 ;
     ret = prepareOperationNode(trnid, QUERY_STATE_OPN, varNo, valueToWrite, siteNo, operationtimestamp, opn) ;
     if(ret == -1) {
@@ -939,8 +939,8 @@ int storeOperation(char *operationString, int operationtimestamp) {
 
 //A new transaction entry is created
 int createNewTransaction(int trnid, int transactionType, int timestamp) {
-  if(trnid >= MAX_TRANSACTIONS ) {	//Transaction Manager can't support transaction ids greater than MAX_TRANSACTIONS
-    printf("createNewTransaction: Transaction %d exceeds Max limit %d\n", trnid, MAX_TRANSACTIONS) ;
+  if(trnid >= MAXIMUM_TRANSACTIONS ) {	//Transaction Manager can't support transaction ids greater than MAXIMUM_TRANSACTIONS
+    printf("createNewTransaction: Transaction %d exceeds Max limit %d\n", trnid, MAXIMUM_TRANSACTIONS) ;
     return -1 ;
   }
   if(T[trnid].timestamp != -1 ) {
@@ -978,7 +978,7 @@ int prepareOperationNode(int trnid, int operationType, int varNo, int valueToWri
     opn->operationStatusAtSites[site_No] = OPN_PENDING ;
   }
   
-  if(T[trnid].timestamp == -1 && trnid == MISCELLANEOUS_TID) {
+  if(T[trnid].timestamp == -1 && trnid == OTHER_TRNID) {
     T[trnid].timestamp = operationtimestamp ;
   }
   opn->transactionType = T[trnid].transactionType ;
@@ -995,7 +995,7 @@ int prepareOperationNode(int trnid, int operationType, int varNo, int valueToWri
 void initializeTransactionManager() {
   //Initialize all transaction structures
   int trnid, siteNo ;
-  for(trnid = 0; trnid < MAX_TRANSACTIONS; trnid++) {
+  for(trnid = 0; trnid < MAXIMUM_TRANSACTIONS; trnid++) {
     T[trnid].timestamp = -1 ;
     T[trnid].transactionType = -1 ;
     T[trnid].transactionCompletionStatus = -1 ;
