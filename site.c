@@ -205,16 +205,16 @@ void addToActiveList(int site_No,int variablenumber,struct operation *node,int r
 if(request==0)    
 {
 	sites[site_No].lock_Entries[variablenumber].first_active_operation = node;
-	node->nextOperationSite = NULL;
+	node->opnSite = NULL;
 }
 else
 {
 	struct operation *current = sites[site_No].lock_Entries[variablenumber].first_active_operation;
-	while(current->nextOperationSite != NULL)
-		current=current->nextOperationSite;
+	while(current->opnSite != NULL)
+		current=current->opnSite;
 
-	current->nextOperationSite=node;
-	node->nextOperationSite=NULL;
+	current->opnSite=node;
+	node->opnSite=NULL;
 }
 
 }
@@ -235,16 +235,16 @@ void addToBlockedList(int site_No,int variablenumber,struct operation *node)
 if(sites[site_No].lock_Entries[variablenumber].first_blocked_operation == NULL)  
 {       
 	sites[site_No].lock_Entries[variablenumber].first_blocked_operation=node;
-	node->nextOperationSite = NULL;
+	node->opnSite = NULL;
 } 
 else
 {
 struct operation *current = sites[site_No].lock_Entries[variablenumber].first_blocked_operation;
-while(current->nextOperationSite != NULL)
-	current=current->nextOperationSite;
+while(current->opnSite != NULL)
+	current=current->opnSite;
 
-current->nextOperationSite=node;
-node->nextOperationSite=NULL;
+current->opnSite=node;
+node->opnSite=NULL;
 }
 
 }
@@ -308,7 +308,7 @@ else
 
 
 //If the same transaction is requesting;No Conflict;This will happen if transaction has a read lock on variable but can't get the lock 
-	       if(first->nextOperationSite == NULL)
+	       if(first->opnSite == NULL)
 		if(first->trnid == trnid) //This function is called only when the transaction had a low strength lock;so block the request
 		 {      
 			return 0;
@@ -330,9 +330,9 @@ else
 			      found=1;
 			      return -1; 
 			     }*/
-			if(first->nextOperationSite==NULL)
+			if(first->opnSite==NULL)
 			   break;
-			first=first->nextOperationSite;
+			first=first->opnSite;
 			}
 			//printf("\n Timestamp of %d;TRNID:%d Timestamp of %d;TRNID:%d",timestamp,trnid,first->trnTimestamp,first->trnid);
 
@@ -418,7 +418,7 @@ for(j=1;j<MAXIMUM_VARIABLES;j++)
 				  sprintf(log_desc,"TRNID %d lock type write; ",first->trnid);
                                 }
 				logString(log_desc);
-				first=first->nextOperationSite;
+				first=first->opnSite;
 			}		  
 		}
 	}
@@ -452,7 +452,7 @@ for(j=1;j<MAXIMUM_VARIABLES;j++)
                                 }
 				
 				logString(log_desc);
-				first=first->nextOperationSite;
+				first=first->opnSite;
 			}		  
 		}
 	}
@@ -661,7 +661,7 @@ int j;
 				  if(sites[site_No].lock_Entries[j].first_blocked_operation!=NULL) 
 				   {	
 					sites[site_No].lock_Entries[j].first_active_operation=sites[site_No].lock_Entries[j].first_blocked_operation;
-					sites[site_No].lock_Entries[j].first_blocked_operation=sites[site_No].lock_Entries[j].first_blocked_operation->nextOperationSite;
+					sites[site_No].lock_Entries[j].first_blocked_operation=sites[site_No].lock_Entries[j].first_blocked_operation->opnSite;
 					performOperation(sites[site_No].lock_Entries[j].first_active_operation, site_No);   //Perform the operation 
 				   }
 				 }
@@ -670,7 +670,7 @@ int j;
 				struct operation *current=sites[site_No].lock_Entries[j].first_blocked_operation;
 				if(current!=NULL)
 				{
-				  if(current->nextOperationSite==NULL)  
+				  if(current->opnSite==NULL)  
 			 	     if(current->trnid==trnid)
 					   sites[site_No].lock_Entries[j].first_blocked_operation=NULL;
 				  else             
@@ -680,14 +680,14 @@ int j;
 					{
 						if(current->trnid==trnid)
 						 {   
-						     current=current->nextOperationSite;	
-						     previous->nextOperationSite=current;
+						     current=current->opnSite;	
+						     previous->opnSite=current;
 						     previous=current;
 						 } 
 						 else
 					 	 {
 						     previous=current;
-						     current=current->nextOperationSite;
+						     current=current->opnSite;
 						 }  
 					} 
 
