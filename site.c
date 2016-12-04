@@ -116,7 +116,7 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 	         	int exist=0;
 		     	while(current!=NULL)
 			 {
-				if((op->trnid==current->trnid)&&(current->W_Timestamp==MAX_TRANSACTION_TIMESTAMP))
+				if((op->trnid==current->trnid)&&(current->W_Timestamp==MAXIMUM_TRN_TIMESTAMP))
 				{
 					current->value=op->valueToWrite;
 					exist=1;
@@ -130,8 +130,8 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 				struct version *newNode = (struct version *) malloc (sizeof(struct version));
 				newNode->trnid=op->trnid;
                        		newNode->value=op->valueToWrite;
- 				newNode->R_Timestamp=MAX_TRANSACTION_TIMESTAMP;
-				newNode->W_Timestamp=MAX_TRANSACTION_TIMESTAMP;
+ 				newNode->R_Timestamp=MAXIMUM_TRN_TIMESTAMP;
+				newNode->W_Timestamp=MAXIMUM_TRN_TIMESTAMP;
 				newNode->next=sites[site_No].variable[varNo].head;
 				sites[site_No].variable[varNo].head=newNode;	
 			}
@@ -143,7 +143,7 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 	         	int exist=0;
 		     	while(current!=NULL)
 			 {
-				if((op->trnid==current->trnid)&&(current->W_Timestamp==MAX_TRANSACTION_TIMESTAMP))
+				if((op->trnid==current->trnid)&&(current->W_Timestamp==MAXIMUM_TRN_TIMESTAMP))
 				{
 					op->valueRead=current->value;  
 					exist=1;
@@ -172,7 +172,7 @@ void UpdateVersionTable(int site_No,int varNo,struct operation *op)
 		     {
 		     	while(current!=NULL)
 			 {
-				if((op->trnid==current->trnid)&&(current->W_Timestamp==MAX_TRANSACTION_TIMESTAMP))
+				if((op->trnid==current->trnid)&&(current->W_Timestamp==MAXIMUM_TRN_TIMESTAMP))
 				{
 					current->W_Timestamp=op->transactionTimestamp;
 					current->R_Timestamp=op->transactionTimestamp;    
