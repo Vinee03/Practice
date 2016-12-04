@@ -323,13 +323,13 @@ else
 		        
 			while(first!=NULL)
 			{
-			   if(timestamp > first->transactionTimestamp)   // If Younger one is requesting;Kill it
+			   /*if(timestamp > first->transactionTimestamp)   // If Younger one is requesting;Kill it
 			     { 
                           sprintf(log_desc,"At Site %d: trnid %d timestamp %d rejected in favor of trnid %d timestamp %d has lock on varNo %d due to wait-die\n", site_No, trnid, timestamp, first->trnid, first->transactionTimestamp, first->varNo) ;
 			  logString(log_desc) ;
 			      found=1;
 			      return -1; 
-			     }
+			     }*/
 			if(first->nextOperationSite==NULL)
 			   break;
 			first=first->nextOperationSite;
