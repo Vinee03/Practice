@@ -12,8 +12,8 @@
                          The structure gives information for a particular site for a particular transaction
 ************************************************************************************************************************/
 struct siteAccessInfo {		
- int tick_firstAccessed ;
- int flagWriteAccessed ;
+ int firstAccessedTick ;
+ int writeAccessed_Flag ;
 } ;
 /********************************************************************************************************************
                                         struct siteInformation starts
@@ -24,9 +24,9 @@ struct siteInformation {
 
 
 
-  int flag_varNo[MAXIMUM_SITES] ;
-  int flag_siteAvailable ;	
-  int tick_upTime ;		
+  int flag_variablenumber[MAXIMUM_SITES] ;
+  int flag_site_available ;	
+  int tick_time ;		
 } ;
 typedef struct siteInformation siteInformation ;
 siteInformation siteInfo[MAXIMUM_SITES] ;
@@ -35,15 +35,15 @@ siteInformation siteInfo[MAXIMUM_SITES] ;
                                      struct Transaction Starts          
 *****************************************************************************************************************************/
 struct Transaction {
- struct siteAccessInfo sites_accessed[MAXIMUM_SITES];
+ struct siteAccessInfo accessedSites[MAXIMUM_SITES];
  int timestamp ;
- int flag_transactionValid ;
+ int trn_valid_flag ;
  int trnType ;
- int transactionCompletionStatus ;
- int inactiveTickNo ;
- struct operation *first_opn ;
- struct operation *last_opn ;
- struct operation *current_opn ;
+ int trn_Completion_Status ;
+ int inactive_tick_number ;
+ struct operation *first_operation ;
+ struct operation *last_operation ;
+ struct operation *current_operation ;
 } ;
 
 struct Transaction T[MAXIMUM_TRANSACTIONS] ;
